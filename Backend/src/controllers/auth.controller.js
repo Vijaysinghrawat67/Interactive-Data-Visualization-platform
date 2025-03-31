@@ -4,21 +4,28 @@ import {ApiResponse} from '../utils/ApiResponse.js';
 import {asyncHandler} from '../utils/AsyncHandler.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
 import fs from 'fs';
-import jwt from 'jsonwebtoken';
-import mongoose from 'mongoose';
+import path from 'path';
+
 
 
 
 const generateAccessAndRefreshtoken = async(userId) => {
     try {
         const user = await User.findById(userId)
-        const accessToken = User.generateAccessToken()
-        const refreshtoken = User.generateRefreshToken()
+        if(!user){
+            throw new ApiError(404, "user not found")
+        }
 
-        user.refreshtoken = refreshtoken;
+        const accessToken = await user.generateAccessToken()
+        const refreshToken = await user.generateRefreshToken()
+
+        // console.log("refreshtokeen is : ",refreshToken);
+        // console.log(accessToken);
+
+        user.refreshtoken = refreshToken;
         await user.save({validateBeforeSave: false})
-
-        return {accessToken, refreshtoken}
+        
+        return {accessToken, refreshToken}
     } catch (error) {
         throw new ApiError(500, "something went wrong while generating access and refresh token!")
     }
@@ -166,24 +173,42 @@ const updateUerInfo = asyncHandler(async(req, res) => {
         throw new ApiError(404, "User not found");
     }
 
-    const {name, username, email, bio, phNumber, location, github, linkedin} = req.body;
+    const {name, username, email, bio, phNumber, location, website, github, linkedin} = req.body;
 
     let profileImageUrl = user.profileImage;
-    if(req.file){
-        const uploadImage = await uploadOnCloudinary(req.file.path);
-        if(!uploadImage?.url){
-            throw new ApiError(500, "Failed to upload image to cloud");
+
+    if(req.file && req.file.path){
+        const normalizePath = path.resolve(req.file.path);
+        //console.log("normalize file path : ", normalizePath);
+
+        try {
+            const uploadImage = await uploadOnCloudinary(normalizePath);
+            if(!uploadImage?.url){
+                throw new ApiError(500, "Failed to upload image to cloud");
+            }
+            profileImageUrl = uploadImage.url;
+
+            if (fs.existsSync(normalizePath)) {
+                fs.unlinkSync(normalizePath);
+                //console.log(`File deleted successfully: ${normalizePath}`);
+            } else {
+                //console.warn(`File not found or already deleted: ${normalizePath}`);
+            }
+        } catch (error) {
+            console.error(`Error during file handling: ${err.message}`);
+            // Ensure cleanup of local file in case of failure
+            if (fs.existsSync(normalizePath)) {
+                fs.unlinkSync(normalizePath);
+            }
+            throw new ApiError(500, "File handling failed");
         }
-
-        profileImageUrl = uploadImage.url;
-
-        fs.unlinkSync(req.file.path);
     }
 
     //updating fields
     user.name = name || user.name;
     user.username = username?.toLowerCase() || user.username;
     user.email = email || user.email;
+    user.phNumber = phNumber || user.phNumber;
     user.profileImage = profileImageUrl;
 
     //optional fields
@@ -195,7 +220,7 @@ const updateUerInfo = asyncHandler(async(req, res) => {
         linkedin : linkedin || user.socialLinks?.linkedin || ""
     }
 
-    await user.save;
+    await user.save();
 
     const updatedUser = await User.findById(user._id).select("-password -refreshtoken");
 

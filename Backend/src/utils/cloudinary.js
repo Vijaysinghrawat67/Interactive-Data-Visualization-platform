@@ -1,6 +1,7 @@
-import {v2, cloudinary} from 'cloudinary';
+import {v2 as cloudinary} from 'cloudinary';
 import {config} from '../config/env.js';
 import fs from 'fs';
+import path from 'path';
 
 cloudinary.config({
     cloud_name : config.CLOUD_NAME,
@@ -11,18 +12,37 @@ cloudinary.config({
 
 const uploadOnCloudinary = async(localFilePath) => {
     try {
-        if(!localFilePath) return null
+        if(!localFilePath){
+            throw new Error("local file path is required!");
+        }
 
-        const result = await cloudinary.uploader.upload(localFilePath, {
+        const normalizePath = path.resolve(localFilePath);
+
+        const result = await cloudinary.uploader.upload(normalizePath, {
             resource_type : 'auto',
         })
 
         //console.log()
-        fs.unlinkSync(localFilePath);
+        if(fs.existsSync(normalizePath)){
+             fs.unlinkSync(normalizePath);
+             //console.log(`File deleted successfully: ${normalizePath}`);
+        } else{
+            //console.warn(`File already deleted or not found at path : ${normalizePath}`);
+        }
         return result;
+
     } catch (error) {
-        fs.unlinkSync(localFilePath);
+       // console.error(`error during cloudinary upload : ${error.message}`);
+
+        // Ensure cleanup of local file in case of failure
+        const normalizePath = path.resolve(localFilePath);
+        if(fs.existsSync(normalizePath)){
+            fs.unlinkSync(normalizePath);
+        }
+
+        throw new Error("failed to upload image on cloudinary!");
+        
     }
-}
+};
 
 export {uploadOnCloudinary};

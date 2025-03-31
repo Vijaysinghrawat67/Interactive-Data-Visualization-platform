@@ -17,7 +17,7 @@ export const config = {
     MONGODB_URI : process.env.MONGODB_URI,
     
 
-    REFRESH_TOKEN : process.env.REFRESH_TIKEN_SECRET,
+    REFRESH_TOKEN : process.env.REFRESH_TOKEN_SECRET,
     ACCESS_TOKEN : process.env.ACCESS_TOKEN_SECRET,
     ACCESS_EXP : process.env.ACCESS_TOKEN_SECRET_EXPIRY,
     REFRESH_EXP : process.env.REFRESH_TOKEN_SECRET_EXPIRY,

@@ -15,12 +15,12 @@ import {upload} from '../middlewares/multer.middleware.js';
 
 const userRouter = Router()
 
-userRouter.route('/register').post(registerUser)
+userRouter.route('/register').post(upload.none(), registerUser)
 userRouter.route('/login').post(loginUser)
 
 userRouter.route('/logout').post(veryfyJWT, logOutUser)
 userRouter.route('/change-password').put(veryfyJWT, changePassword)
-userRouter.route('update-profile').put(veryfyJWT, upload.single('profileImage'), updateUerInfo)
+userRouter.route('/update-profile').put(veryfyJWT, upload.single('profileImage'), updateUerInfo)
 userRouter.route('/me').get(veryfyJWT, getCurrentUser)
 
 

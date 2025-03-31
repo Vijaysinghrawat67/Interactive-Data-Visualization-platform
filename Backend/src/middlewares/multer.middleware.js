@@ -4,6 +4,7 @@ import path from 'path';
 
 
 const tempDir = './public/temp';
+
 if(!fs.existsSync(tempDir)){
     fs.mkdirSync(tempDir, {
         recursive : true

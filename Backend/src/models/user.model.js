@@ -112,8 +112,7 @@ userSchema.methods.generateRefreshToken = async function(){
         }
     );
 
-    this.refreshtoken = refreshToken;
-    await this.save();
+    
     return refreshToken;
 }
 
