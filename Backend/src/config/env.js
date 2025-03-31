@@ -21,6 +21,8 @@ export const config = {
     ACCESS_TOKEN : process.env.ACCESS_TOKEN_SECRET,
     ACCESS_EXP : process.env.ACCESS_TOKEN_SECRET_EXPIRY,
     REFRESH_EXP : process.env.REFRESH_TOKEN_SECRET_EXPIRY,
-
+    CLOUD_NAME : process.env.CLOUDINARY_CLOUD_NAME,
+    CLOUD_API_KEY : process.env.CLOUDINARY_API_KEY,
+    CLOUD_SECRET : process.env.CLOUDINARY_API_SECRET,
     origin : process.env.CORS_ORIGIN
 };

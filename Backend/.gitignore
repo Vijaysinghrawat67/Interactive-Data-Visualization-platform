@@ -11,6 +11,10 @@ yarn-error.log
 .env.test.local
 .env.production.local
 
+#public folder
+public/
+temp
+
 # Logs
 logs/
 *.log

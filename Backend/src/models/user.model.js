@@ -43,6 +43,22 @@ const userSchema = new Schema({
     },
     refreshtoken : {
         type : String
+    },
+    bio : {
+        type :String,
+        default : "",
+    },
+    location : {
+        type : String,
+        default : ""
+    },
+    socialLinls : {
+        website : {type : String, default : ""},
+        github : {type: String, default : ""},
+        linkedin : {type : String, default : ""}
+    },
+    phNumber : {
+        type : Number
     }
 },
 

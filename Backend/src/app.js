@@ -3,6 +3,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import {config} from './config/env.js';
 import userRouter from './routs/user.route.js';
+import adminRouter from './routs/admin.route.js';
+import dashboardrouter from './routs/dashboard.route.js';
 
 
 
@@ -22,7 +24,8 @@ app.use(cookieParser());
 
 //route declaration
 app.use('/api/v1/user', userRouter);
-
+app.use('/api/v1/admin',adminRouter );
+app.use('/api/v1/dashboard', dashboardrouter);
 
 
 export {app};

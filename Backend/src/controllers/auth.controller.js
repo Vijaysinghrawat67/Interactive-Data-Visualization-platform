@@ -2,6 +2,8 @@ import {User} from '../models/user.model.js';
 import {ApiError} from '../utils/ApiError.js';
 import {ApiResponse} from '../utils/ApiResponse.js';
 import {asyncHandler} from '../utils/AsyncHandler.js';
+import { uploadOnCloudinary } from '../utils/cloudinary.js';
+import fs from 'fs';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 
@@ -128,8 +130,15 @@ const logOutUser = asyncHandler(async(req, res) => {
 
 const changePassword = asyncHandler(async(req, res) => {
     const {oldPassword, newPassword} = req.body
+    if (!oldPassword || !newPassword) {
+        throw new ApiError(400, "Both old and new passwords are required.");
+      }
 
     const user = await User.findById(req.user?._id)
+    if (!user) {
+        throw new ApiError(404, "User not found.");
+    }
+
     const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
 
     if(!isPasswordCorrect){
@@ -145,12 +154,91 @@ const changePassword = asyncHandler(async(req, res) => {
 })
 
 
+const updateUerInfo = asyncHandler(async(req, res) => {
+    const userId = req.user?._id;
+
+    if(!userId){
+        throw new ApiError(401, "unauthorized access!")
+    }
+
+    const user = await User.findById(userId);
+    if(!user){
+        throw new ApiError(404, "User not found");
+    }
+
+    const {name, username, email, bio, phNumber, location, github, linkedin} = req.body;
+
+    let profileImageUrl = user.profileImage;
+    if(req.file){
+        const uploadImage = await uploadOnCloudinary(req.file.path);
+        if(!uploadImage?.url){
+            throw new ApiError(500, "Failed to upload image to cloud");
+        }
+
+        profileImageUrl = uploadImage.url;
+
+        fs.unlinkSync(req.file.path);
+    }
+
+    //updating fields
+    user.name = name || user.name;
+    user.username = username?.toLowerCase() || user.username;
+    user.email = email || user.email;
+    user.profileImage = profileImageUrl;
+
+    //optional fields
+    user.bio = bio || user.bio;
+    user.location = location || user.location;
+    user.socialLinks = {
+        website : website || user.socialLinks?.website || "",
+        github : github || user.socialLinks?.github || "",
+        linkedin : linkedin || user.socialLinks?.linkedin || ""
+    }
+
+    await user.save;
+
+    const updatedUser = await User.findById(user._id).select("-password -refreshtoken");
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, updatedUser, "profile updated successfully")
+    );
+
+});
+
+
+const getCurrentUser = asyncHandler(async(req, res) => {
+        const userId = req.user?._id;
+
+        if(!userId){
+            throw new ApiError(401, "Unauthorized access")
+        }
+
+        const user = await User.findById(userId).select(
+            "-password -refreshtoken"
+        )
+
+        if(!user){
+            throw new ApiError(404, "user not found")
+        }
+
+        return res
+        .status(200)
+        .json(
+            new ApiResponse(200, user, "user fetched successfully")
+        );
+});
+
+
+
 
 export {
     registerUser,
     loginUser,
     logOutUser,
     changePassword,
-
+    updateUerInfo,
+    getCurrentUser
     
 }
