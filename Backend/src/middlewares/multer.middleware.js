@@ -25,10 +25,24 @@ const storage = multer.diskStorage({
 
 const fileFilter = (req, file, cb) => {
     const allowedtypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if(allowedtypes.includes(file.mimetype)){
-        cb(null,true)
-    } else{
-        cb(new Error('only images are allowed'), false);
+    const dataTypes =  ["text/csv", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/json"]
+
+     if (req.path.includes("profile")) {
+        // Profile image upload
+        if (allowedtypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error("Only image files (JPG, PNG, WEBP) are allowed"), false);
+        }
+    } else if (req.path.includes("upload")) {
+        // File data upload
+        if (dataTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error("Only CSV, Excel, or JSON files are allowed"), false);
+        }
+    } else {
+        cb(new Error("Invalid file type"), false);
     }
 };
 

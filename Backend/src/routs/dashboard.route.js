@@ -7,6 +7,6 @@ import { adminDashboard, userDashboard } from '../controllers/dashboard.controll
 const dashboardrouter = Router();
 
 dashboardrouter.route('/user-das').get(veryfyJWT, userDashboard)
-dashboardrouter.route('/admin-das').get(veryfyJWT, authorizeRoles('admin'), adminDashboard)
+dashboardrouter.route('/admin-das').get(veryfyJWT, authorizeRoles('admin', 'super-admin'), adminDashboard)
 
 export default dashboardrouter;
