@@ -9,7 +9,7 @@ const Upload = Router();
 
 Upload.route('/upload-file').post(veryfyJWT, upload.single('file'), uploadfileData);
 Upload.route('/upload-api').post(veryfyJWT, fetchDatafromApi, uploadApiData);
-upload.route('/upload-text').post(veryfyJWT, uploadTextData);
+Upload.route('/upload-text').post(veryfyJWT, uploadTextData);
 
 
 export default Upload;

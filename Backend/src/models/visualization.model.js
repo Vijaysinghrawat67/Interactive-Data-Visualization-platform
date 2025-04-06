@@ -4,7 +4,7 @@ import { mongoose, Schema } from 'mongoose';
 const visualizationSchema = new Schema(
     {
         userId: {
-            type: mongoose.Schema.Types.objectId,
+            type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
             required: true,
         },
@@ -19,14 +19,22 @@ const visualizationSchema = new Schema(
         },
         chartType: {
             type: String,
-            enum: ["bar", "line", "pie", "scatter"],
+            enum: ["bar", "line", "pie", "scatter", "area"],
             required: true,
         },
         datasourceId: {
-            type: mongoose.Schema.Types.objectId,
-            ref: 'Datasources',
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'DataSource',
             required: true,
         },
+        xField: {
+            type: String,
+            required: true
+          },
+        yField: {
+            type: String,
+            required: true
+          },
         config: {
             type: Object,
             required: true,

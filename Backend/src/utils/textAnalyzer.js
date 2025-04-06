@@ -6,10 +6,10 @@ const analyzerText = (text) => {
 
     return {
         originalText: text,
-        wordCount
+        wordCount : words,
     };
 };
 
 export{
     analyzerText
-}
+};

@@ -6,6 +6,7 @@ import userRouter from './routs/user.route.js';
 import adminRouter from './routs/admin.route.js';
 import dashboardrouter from './routs/dashboard.route.js';
 import Upload from './routs/upload.route.js';
+import visualize from './routs/visualization.route.js';
 
 
 
@@ -28,6 +29,6 @@ app.use('/api/v1/user', userRouter);
 app.use('/api/v1/admin',adminRouter );
 app.use('/api/v1/dashboard', dashboardrouter);
 app.use('/api/v1/upload', Upload);
-
+app.use('/api/v1/visualization',visualize);
 
 export {app};

@@ -17,8 +17,8 @@ const parseCSV = (filePath) => {
 
 
 const parseExcel = (filePath) => {
-    const workbook = xlsx.readfile(filePath);
-    const sheetName = workbook.sheetNames[0];
+    const workbook = xlsx.readFile(filePath);
+    const sheetName = workbook.SheetNames[0];
     return xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
 };
 

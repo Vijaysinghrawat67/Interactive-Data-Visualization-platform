@@ -1,19 +1,30 @@
 import axios from 'axios';
+import {ApiError} from '../utils/ApiError.js';
 
 
-export const fetchDatafromApi = async(req, res, next) => {
+const fetchDatafromApi = async(req, res, next) => {
     try {
         const {apiUrl} = req.body;
         if(!apiUrl) {
             return res.status(400).json({message: "API URL is required"});
         }
         const response = await axios.get(apiUrl);
-        req.apiData = response.data;
+        const apiData = response.data;
+       
+
+        if (!Array.isArray(apiData) || apiData.length === 0) {
+            throw new ApiError(400, "API did not return valid array data");
+        } 
+        req.apiData = apiData;
+        req.apiSchema = Object.keys(apiData[0]);
+
         next();
     } catch (error) {
-        return res.status(500)
-        .json({
-            message : "Failed to fetch data from API"
-        })
+        console.error("API Fetch Error:", error);
+        next(new ApiError(500, "Failed to fetch or process API data"));
     }
 };
+
+export{
+    fetchDatafromApi
+}

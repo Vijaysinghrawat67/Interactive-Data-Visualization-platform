@@ -6,23 +6,23 @@ const dataSourceSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,  // Faster lookups for user's data sources
+      index: true,
     },
     sourceType: {
       type: String,
-      enum: ["csv", "json", "api", "text"], // Added "text" if supporting text-based sources
+      enum: ["csv", "json", "api", "text", "xlsx"],
       required: true,
     },
     sourceDetails: {
-      type: Object, // Stores API URL, file metadata, etc.
+      type: Object,
       default: {},
     },
-    schema: {
-      type: Object, // Defines column names/types for structured data
+    schemaFields: { // 🔁 renamed from "schema"
+      type: [String],
       required: true,
     },
     data: {
-      type: Array, // Stores processed/parsed data (optional)
+      type: [Schema.Types.Mixed],
       default: [],
     },
     status: {
@@ -36,4 +36,5 @@ const dataSourceSchema = new Schema(
   }
 );
 
-export const DataSource = mongoose.model("DataSource", dataSourceSchema);
+export const DataSource =
+  mongoose.models.DataSource || mongoose.model("DataSource", dataSourceSchema);
