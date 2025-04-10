@@ -3,6 +3,7 @@ import {ApiError} from '../utils/ApiError.js';
 import {ApiResponse} from '../utils/ApiResponse.js';
 import {DataSource} from '../models/dataSource.model.js';
 import {Visualization} from '../models/visualization.model.js';
+import { User } from '../models/user.model.js';
 
 
 
@@ -117,10 +118,68 @@ const deleteVisualization = asyncHandler(async(req, res) => {
 });
 
 
+
+
+ const iviteCollaborator = asyncHandler(async (req, res) => {
+  const { id } = req.params; // visualization ID
+  const { email } = req.body; // collaborator email
+  const requestorId = req.user._id;
+
+  // Find the user you're trying to invite by email
+  //console.log("Trying to invite user with email:", email);
+
+  const userToInvite = await User.findOne({ email });
+  if (!userToInvite) {
+    throw new ApiError(404, "User to invite not found");
+  }
+
+  // Find the visualization
+  const viz = await Visualization.findById(id);
+  if (!viz) {
+    throw new ApiError(404, "Visualization not found");
+  }
+
+  // Ensure the requester is the owner
+  if (viz.userId.toString() !== requestorId.toString()) {
+    throw new ApiError(403, "You are not authorized to invite collaborators");
+  }
+
+  // Avoid duplicate collaborator
+  if (viz.collaborators?.includes(userToInvite._id)) {
+    throw new ApiError(400, "User is already a collaborator");
+  }
+
+  // Push collaborator and save
+  viz.collaborators = [...(viz.collaborators || []), userToInvite._id];
+  await viz.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "User invited successfully"));
+});
+
+
+
+const getSharedVisualizations = asyncHandler(async(req, res) => {
+    const userId = req.user._id;
+
+    const sharedVisualizations = await Visualization.find({
+        collaborators: userId,
+
+    }).populate('userId', 'name email');
+
+    return res.status(200)
+    .json(new ApiResponse(
+        200, sharedVisualizations, "Shared visualizations fetched successfully"
+    ))
+});
+
 export{
     createVisualization,
     getUserVisualization,
     getSingleVisualization,
     updateVisualization,
-    deleteVisualization
+    deleteVisualization,
+    iviteCollaborator,
+    getSharedVisualizations
 }

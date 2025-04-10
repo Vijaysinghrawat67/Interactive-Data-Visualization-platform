@@ -9,7 +9,7 @@ const activityLogSchema = new Schema({
     },
     actiontype : {
         type : String,
-        enum : ["created", "edited", "deleted", "shared"],
+        enum: ["create", "update", "delete", "share", "export", "login", "register"],
         required : true,
     },
     visualizationId : {
@@ -17,10 +17,12 @@ const activityLogSchema = new Schema({
         ref : 'Visualization',
         default : 'null',
     },
-    timestamp : {
-        type : Date,
-        default : Date.now,
-    }
+    meta: {
+        type: Object,
+        default: {},
+      },
+}, {
+    timestamps: true,
 })
 
 export const ActivityLog = mongoose.model('ActivityLog', activityLogSchema);

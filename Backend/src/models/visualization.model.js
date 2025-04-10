@@ -42,7 +42,13 @@ const visualizationSchema = new Schema(
         isPublic: {
             type: Boolean,
             default: false,
-        }
+        },
+        collaborators: [
+            {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "User",
+            },
+          ],
     },
     {
         timestamps: true,
