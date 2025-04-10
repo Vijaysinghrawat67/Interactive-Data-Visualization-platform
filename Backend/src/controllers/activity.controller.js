@@ -18,7 +18,7 @@ const getActivityLog = asyncHandler(async(req, res) => {
     const logs = await ActivityLog.find(filter)
     .populate("userId", "name email")
     .populate("visualizationId", "title")
-    .populate({createdAt : -1});
+    .sort({createdAt : -1});
 
 
     return res.status(200)
