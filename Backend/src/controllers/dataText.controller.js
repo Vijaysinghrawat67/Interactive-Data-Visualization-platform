@@ -140,9 +140,19 @@ const uploadTextData = asyncHandler(async (req, res) => {
         )
 });
 
+const getAllDataSources = asyncHandler(async (req, res) => {
+  const uderId = req.user._id;
+
+  const dataSources = await DataSource.find({ userId: uderId }).sort({ createdAt: -1 });
+
+  return res.status(200).json(
+    new ApiResponse(200, dataSources, "Data sources fetched successfully"))
+});
+
 
 export {
     uploadfileData,
     uploadApiData,
-    uploadTextData
+    uploadTextData,
+    getAllDataSources,
 }

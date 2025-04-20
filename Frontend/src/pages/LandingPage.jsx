@@ -1,8 +1,8 @@
 
-import Hero from "@/components/landing/Hero"
+import Hero from "@/components/layout/landing/Hero"
 
-import Features from "@/components/landing/Features"
-import CallToAction from "@/components/landing/CallToAction"
+import Features from "@/components/layout/landing/Features"
+import CallToAction from "@/components/layout/landing/CallToAction"
 
 export default function LandingPage() {
   return (

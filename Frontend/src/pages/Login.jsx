@@ -7,7 +7,9 @@ import { motion } from "framer-motion"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Link, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
-import api from '@/lib/axios.js'
+import api from '@/services/axios.js'
+import { useAuth } from "@/context/AuthContext"
+
 
 const formSchema = z.object({
   email: z.string().email("Invalid email"),
@@ -17,6 +19,7 @@ const formSchema = z.object({
 
 export default function Login() {
   const navigate = useNavigate()
+  const {login} = useAuth()
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -30,13 +33,14 @@ export default function Login() {
   const onSubmit = async (data) => {
     try {
       const response = await api.post("/api/v1/user/login", data)
+      login(response.data.token);
 
       toast.success("Logged in successfully!")
       // Optional: store token if needed
       // localStorage.setItem("token", response.data.token)
 
       // Redirect
-      navigate("/")
+      navigate("/dashboard")
     } catch (error) {
       const message =
         error?.response?.data?.message || "Login failed. Please try again."
