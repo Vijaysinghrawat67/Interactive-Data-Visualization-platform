@@ -37,7 +37,7 @@ export default function DashboardLayout() {
   const navItems = [
     { label: "Overview", path: "/dashboard/overview", icon: <BarChart3 /> },
     { label: "Profile", path: "/dashboard/profile", icon: <User /> },
-    { label: "Data Sources", path: "/dashboard/data", icon: <Database /> },
+    { label: "Data Sources", path: "/dashboard/datasource", icon: <Database /> },
     { label: "Visualizations", path: "/dashboard/visualization", icon: <BarChart3 /> },
     { label: "Activity Logs", path: "/dashboard/logs", icon: <FileText /> },
     { label: "Settings", path: "/dashboard/settings", icon: <Settings /> },

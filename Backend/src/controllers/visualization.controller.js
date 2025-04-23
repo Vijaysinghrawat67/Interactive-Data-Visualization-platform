@@ -60,11 +60,11 @@ const getUserVisualization = asyncHandler(async(req, res) => {
 
 const getSingleVisualization = asyncHandler(async(req, res) => {
     const {id} = req.params;
-
+    
     const visualization = await Visualization.findOne({
         _id : id,
         userId : req.user._id,
-    }).populate('datasourceId', 'sourceType schema' );
+    }).populate('datasourceId', 'sourceType schema data' );
 
     if(!visualization){
         throw new ApiError(

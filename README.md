@@ -1,139 +1,127 @@
-# 📊 Data Visualization Platform - Final Year Major Project
 
-## 🧠 Project Overview
-A scalable, full-stack **Data Visualization Platform** that allows users to:
-- Upload and manage data sources (CSV, JSON, APIs)
-- Create rich visualizations (bar, pie, line, scatter, etc.)
-- Configure charts with custom fields (x/y axis, colors, etc.)
-- Export and share charts (PDF, PNG, JSON, CSV)
-- Enable collaboration, real-time updates, and AI-driven insights
 
-This project aims to bring **real-world dashboard and data storytelling features** into a user-friendly web app, with a clean backend architecture and future-ready extensibility.
+# 📊 **Data Visualization application - Final Year Major Project**
+
+## 🧠 **Project Overview**
+A scalable, full-stack **Data Visualization Platform** designed to empower users with:
+- **Data Management**: Upload and manage data sources (CSV, JSON, APIs).
+- **Dynamic Visualizations**: Create impactful charts like bar, pie, line, scatter, etc.
+- **Chart Configuration**: Customize fields (x/y axis, colors, labels).
+- **Exports and Sharing**: Export visualizations in multiple formats (PDF, PNG, JSON, CSV).
+- **Collaboration and Real-Time Updates**: Enable team-based workflows with live updates and AI-driven insights.
+
+The platform aims to provide **real-world dashboarding and storytelling features** with a seamless user experience, a robust backend, and future-proof extensibility.
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ **System Architecture**
 
-### 🌐 High-Level Flow:
-```
+### 🌐 **High-Level Flow**
+```plaintext
 Users → Visualizations → Data Sources → Exports/Sharing
 ```
 
-### ✅ Current Tech Stack:
-- **Frontend**: React (TBD)
+### 🔧 **Tech Stack**
+- **Frontend**: React
 - **Backend**: Node.js, Express.js
-- **Database**: MongoDB with Mongoose
-- **Auth**: JWT Token-based Authentication
-- **Storage**: Local file storage (for now)
+- **Database**: MongoDB (Mongoose)
+- **Authentication**: JWT Token-based Authentication
+- **Storage**: Local file storage, with options for cloud integration
 
 ---
 
-## 📦 Completed Modules
+## 🌟 **Platform Features**
 
-### 🔐 Authentication
-- [x] User signup/login (`/api/auth/register`, `/login`)
-- [x] JWT token generation and validation middleware
-- [x] User profile retrieval (`/api/users/me`)
+### 🔐 **Authentication**
+- User-friendly signup and login system.
+- JWT-based token authentication for secure access.
+- Personalized user profiles and session management.
 
-### 📂 Data Sources
-- [x] Upload CSV/JSON data
-- [x] Store in MongoDB with schema detection
-- [x] Link to user & visualizations
-- [x] DataSource model with validations
+### 📂 **Data Management**
+- Upload data sources in CSV, JSON, or connect external APIs.
+- Automatic schema detection to map fields accurately.
+- Centralized repository for all data sources, linked to visualizations.
+- Raw text input analysis for text-based data.
 
-### 📊 Visualization Builder
-- [x] Create visualizations
-- [x] Configurable fields: `xField`, `yField`, `chartType`
-- [x] Connect to Data Source via `datasourceId`
-- [x] Full CRUD API endpoints
+### 📊 **Visualization Builder**
+- Create visualizations with multiple chart types:
+  - Bar charts, pie charts, line graphs, scatter plots, and more.
+- Configure visualization parameters:
+  - Map `xField` and `yField`, customize themes and labels.
+- Interactive and responsive charts for better storytelling.
+- Intuitive interface for creating and managing visualizations.
 
-### 🧪 Testing
-- [x] Auth & visualization routes tested using Postman
-- [x] Mongoose relationships verified
+### 📤 **Export and Share**
+- Export visualizations in popular formats:
+  - **PDF**, **PNG**, **CSV**, and **JSON**.
+- Shareable links for easy collaboration with teams and stakeholders.
+- Configurable export options to include metadata and branding.
 
----
+### 📜 **Activity Logs**
+- Track user actions such as creating, editing, deleting, and sharing visualizations.
+- Store logs in a database for analytics, user tracking, and auditing.
 
-## 🚧 Pending Features
+### 🧑‍🤝‍🧑 **Collaboration and Access Control**
+- Invite collaborators to join projects and visualizations.
+- Role-based access control (RBAC) with roles like Admin, Editor, and Viewer.
+- Real-time synchronization for collaborative dashboards.
 
-### 📤 Export & Share
-- [ ] Export charts to PNG, PDF, CSV, JSON
-- [ ] Shareable links and download endpoints
-- [ ] Export model + route
+### 📡 **Real-Time Updates**
+- WebSocket (Socket.io) integration for live data updates.
+- Dynamically refreshed visualizations for monitoring and decision-making.
 
-### 📜 Activity Logs
-- [ ] Track actions like create, edit, delete, share
-- [ ] Store logs in DB for analytics / audit
+### 🧠 **AI-Powered Insights**
+- Recommendations for chart types based on data patterns.
+- Automated analysis and summarization of trends and key insights.
 
-### 🧑‍🤝‍🧑 Collaboration & Access Control
-- [ ] Invite collaborators to visualizations
-- [ ] RBAC: Admin, User, Collaborator roles
-
-### 📡 Real-Time Updates
-- [ ] WebSocket (Socket.io) for live dashboards
-- [ ] Real-time sync for teams
-
-### 🧠 AI Smart Features
-- [ ] Auto-suggest chart types
-- [ ] Analyze and summarize data trends
-
-### 🌓 UI/UX Enhancements
-- [ ] Frontend dashboard (React setup pending)
-- [ ] Dark/light mode toggle
-- [ ] Chart customization (colors, themes)
+### 🌓 **User-Centric Design**
+- Modern and minimalistic dashboard with smooth navigation.
+- Light and dark mode for improved accessibility.
+- Fully responsive interface, optimized for desktop, tablet, and mobile devices.
 
 ---
 
-## 📚 Models Summary
+## 📚 **Data Models**
 
-### 🧍 User
-- name, email, password (hashed), role
-- has many visualizations, data sources
+### 🧍 **User**
+| **Field**       | **Type**          | **Description**                |
+|------------------|-------------------|--------------------------------|
+| `name`          | String            | Full name of the user          |
+| `email`         | String            | Unique email address           |
+| `password`      | String (hashed)   | Securely hashed password        |
+| `role`          | Enum              | Admin, Editor, Viewer roles    |
 
-### 📊 Visualization
-- title, description, chartType, datasourceId
-- config (JSON), xField, yField, isPublic
+### 📊 **Visualization**
+| **Field**       | **Type**          | **Description**                |
+|------------------|-------------------|--------------------------------|
+| `title`         | String            | Visualization title            |
+| `description`   | String            | Brief visualization summary    |
+| `chartType`     | Enum              | Chart type (Bar, Pie, etc.)    |
+| `datasourceId`  | ObjectId          | Linked data source             |
+| `config`        | JSON              | Chart configuration metadata   |
 
-### 📂 DataSource
-- filePath / sourceURL, schema, sourceType (CSV/JSON/API)
-- belongs to user
+### 📂 **Data Source**
+| **Field**       | **Type**          | **Description**                |
+|------------------|-------------------|--------------------------------|
+| `sourceType`    | Enum              | Data type (CSV, JSON, API)     |
+| `filePath`/`sourceURL` | String    | File path or API source         |
+| `schema`        | Array[String]     | Schema fields extracted         |
 
-### 📤 Export
-- visualizationId, format, downloadLink
+### 📜 **Activity Log**
+| **Field**       | **Type**          | **Description**                |
+|------------------|-------------------|--------------------------------|
+| `userId`        | ObjectId          | User performing the action     |
+| `actionType`    | Enum              | Action type (Create, Edit, etc.)|
+| `visualizationId` | ObjectId       | Affected visualization          |
 
-### 📝 ActivityLog
-- userId, actionType, visualizationId, timestamp
-
----
-
-## 🚀 Roadmap Snapshot
-
-| Feature                        | Status       |
-|-------------------------------|--------------|
-| Auth (register/login)         | ✅ Completed |
-| Data source upload & schema   | ✅ Completed |
-| Visualization CRUD            | ✅ Completed |
-| API Testing                   | ✅ Completed |
-| Export/Download charts        | 🔜 Pending   |
-| Activity log tracking         | 🔜 Pending   |
-| Role-based access control     | 🔜 Pending   |
-| WebSocket real-time updates   | 🔜 Pending   |
-| AI insight engine             | 🔜 Pending   |
-| Frontend (React integration)  | ⚙️ In Progress |
-| Theme preferences             | 🔜 Pending   |
-| Final deployment              | 🔜 Pending   |
-
----
-
-## 🧭 Next Steps
-- Begin **frontend integration**: React setup, pages for auth, data, and visualizations
-- Add **export/share features**
-- Implement **activity logs** model and API
-- Begin **real-time dashboard** and **role management** modules
+### 📤 **Export**
+| **Field**       | **Type**          | **Description**                |
+|------------------|-------------------|--------------------------------|
+| `visualizationId` | ObjectId        | Linked visualization           |
+| `format`        | Enum              | Export format (PDF, PNG, etc.) |
+| `downloadLink`  | String            | Downloadable link for export   |
 
 ---
 
-Let’s use this README to track progress as we move module by module 💻
-We can update this file every few days to reflect new changes.
-
-> ✅ Ask me anytime to generate docs, pitch decks, or reports from this!
+---
 

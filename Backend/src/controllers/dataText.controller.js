@@ -7,6 +7,7 @@ import {analyzerText} from '../utils/textAnalyzer.js';
 import fs from 'fs';
 import path from 'path';
 import axios from 'axios';
+import mongoose from 'mongoose';
 
 const uploadfileData = asyncHandler(async (req, res) => {
   try {
@@ -30,12 +31,15 @@ const uploadfileData = asyncHandler(async (req, res) => {
     }
 
     const schema = Array.isArray(parseData) && parseData.length > 0
-      ? Object.keys(parseData[0]).filter(key => key && !key.startsWith('__EMPTY'))
+      ? Object.keys(parseData[0]).map(key => key.trim().replace(/^\uFEFF/, ''))
       : [];
 
     if (!Array.isArray(schema) || schema.length === 0) {
       throw new ApiError(500, "Invalid schema extracted from file");
     }
+
+    //console.log("Parsed Data: ", parseData);
+   // console.log("Schema fields:", schema);
 
     const newDataObj = {
       userId: req.user?._id,
@@ -44,7 +48,7 @@ const uploadfileData = asyncHandler(async (req, res) => {
         filePath: req.file?.path,
       },
       schemaFields: schema, // ✅ renamed
-      data: [],
+      data: parseData,
       status: 'pending',
     };
 
@@ -82,10 +86,10 @@ const uploadApiData = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Failed to fetch API data");
 }
 
-  const apiData = req.apiData;
-  // if (!apiData || !Array.isArray(apiData) || apiData.length === 0) {
-  //     throw new ApiError(500, "Failed to fetch valid API data");
-  // }
+  const apiData = response?.data;
+  if (!apiData || !Array.isArray(apiData) || apiData.length === 0) {
+    throw new ApiError(500, "Failed to fetch valid API data");
+}
   
   const dataArray = Array.isArray(apiData) ? apiData : [apiData];
 
@@ -95,6 +99,9 @@ const uploadApiData = asyncHandler(async (req, res) => {
 
 
   const schema = Object.keys(dataArray[0]);
+  if(!schema || schema.length === 0){
+    throw new ApiError(500, "Inconsistant or empty schema for api response");
+  }
 
   const newData = new DataSource({
       userId: req.user._id,
@@ -102,7 +109,7 @@ const uploadApiData = asyncHandler(async (req, res) => {
       sourceDetails: {
           url: apiUrl
       },
-      schema,
+      schemaFields : schema,
       data: dataArray, // ✅ important!
       status: 'pending'
   });
@@ -142,11 +149,36 @@ const uploadTextData = asyncHandler(async (req, res) => {
 
 const getAllDataSources = asyncHandler(async (req, res) => {
   const uderId = req.user._id;
+  //console.log(uderId);
 
   const dataSources = await DataSource.find({ userId: uderId }).sort({ createdAt: -1 });
-
+  //console.log("response datasoource", dataSources);
   return res.status(200).json(
     new ApiResponse(200, dataSources, "Data sources fetched successfully"))
+});
+
+
+const getSingleDataSource = asyncHandler(async(req, res) => {
+  const {id} =  req.params;
+ // const userId = req.user._id;
+
+  if(!mongoose.Types.ObjectId.isValid(id)){
+    return res.status(400).json({ error: "Invalid data source ID." });
+  }
+
+  try {
+    const dataSource = await DataSource.findById(id);
+
+    if (!dataSource) {
+      return res.status(404).json({ error: "Data source not found." });
+    }
+
+    res.status(200).json({ data: dataSource });
+  } catch (err) {
+    console.error("Error fetching data source:", err);
+    res.status(500).json({ error: "Server error while retrieving data source." });
+  }
+
 });
 
 
@@ -155,4 +187,5 @@ export {
     uploadApiData,
     uploadTextData,
     getAllDataSources,
+    getSingleDataSource
 }
