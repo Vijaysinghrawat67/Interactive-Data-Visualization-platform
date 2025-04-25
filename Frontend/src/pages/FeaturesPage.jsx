@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FaCloudDownloadAlt, FaChartBar, FaUsers, FaRobot, FaPaintBrush } from "react-icons/fa";
+import { Link } from "react-router-dom";
 import HeroImage from "@/assets/HeroImage.jpg";
 
 const features = [
@@ -121,7 +122,7 @@ const FeaturesPage = () => {
       {/* CTA Section */}
       <div className="mt-24 text-center">
         <Button size="lg" className="px-8 py-4 text-lg rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white transition duration-300 transform hover:scale-105">
-          Get Started
+          <Link to="/register">Get Started Now</Link>
         </Button>
       </div>
     </div>

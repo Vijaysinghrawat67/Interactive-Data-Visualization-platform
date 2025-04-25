@@ -54,7 +54,6 @@ const VisualizationsListPage = () => {
         <Link to="/dashboard/visualization/create">
           <Button className="rounded-xl px-6 py-2">+ New Visualization</Button>
         </Link>
-
       </div>
 
       {loading ? (
@@ -64,36 +63,36 @@ const VisualizationsListPage = () => {
           ))}
         </div>
       ) : visualizations.length === 0 ? (
-        <p className="text-gray-500 text-center mt-12">No visualizations found.</p>
+        <p className="text-gray-500 dark:text-gray-400 text-center mt-12">No visualizations found.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {visualizations.map((viz) => (
             <Card
               key={viz._id}
-              className="rounded-2xl border border-gray-200 hover:shadow-lg transition duration-300"
+              className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-lg transition duration-300"
             >
               <CardContent className="p-5 flex flex-col justify-between h-full">
                 <div>
                   <h3 className="text-lg font-semibold mb-1 text-gray-900 dark:text-white">
                     {viz.title}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-2 line-clamp-2">
                     {viz.description}
                   </p>
-                  <p className="text-xs text-muted-foreground mb-4">
+                  <p className="text-xs text-muted-foreground dark:text-gray-500 mb-4">
                     Created {formatDistanceToNow(new Date(viz.createdAt))} ago
                   </p>
                 </div>
-                <div className="flex items-center justify-between gap-2">
-                  <Link to={`/dashboard/visualization/${viz._id}`}>
-                    <Button size="sm" variant="outline" className="gap-1">
+                <div className="flex flex-wrap sm:flex-nowrap gap-2 mt-auto">
+                  <Link to={`/dashboard/visualization/${viz._id}`} className="flex-1">
+                    <Button size="sm" variant="outline" className="w-full gap-1">
                       <Eye className="w-4 h-4" />
                       View
                     </Button>
                   </Link>
 
-                  <Link to={`/dashboard/visualization/edit/${viz._id}`}>
-                    <Button size="sm" variant="secondary" className="flex items-center gap-1">
+                  <Link to={`/dashboard/visualization/edit/${viz._id}`} className="flex-1">
+                    <Button size="sm" variant="secondary" className="w-full gap-1">
                       ✏️ Edit
                     </Button>
                   </Link>
@@ -101,7 +100,7 @@ const VisualizationsListPage = () => {
                   <Button
                     size="sm"
                     variant="destructive"
-                    className="gap-1"
+                    className="w-full flex-1 gap-1"
                     onClick={() => handleDelete(viz._id)}
                   >
                     <Trash2 className="w-4 h-4" />

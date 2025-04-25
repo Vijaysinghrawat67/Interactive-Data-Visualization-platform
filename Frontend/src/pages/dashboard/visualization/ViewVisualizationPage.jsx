@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { getVisualizationById } from "@/services/Visualization.js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import ChartRenderer from "@/components/charts/ChartRenderer.jsx";
 
 const ViewVisualizationPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [visualization, setVisualization] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -17,7 +18,11 @@ const ViewVisualizationPage = () => {
     const fetchVisualization = async () => {
       try {
         const res = await getVisualizationById(id);
-        setVisualization(res?.data?.data);
+        if (res?.data?.data) {
+          setVisualization(res.data.data);
+        } else {
+          throw new Error("Invalid visualization data");
+        }
       } catch (error) {
         console.error("Error fetching visualization:", error);
         toast.error("Failed to load visualization.");
@@ -37,22 +42,35 @@ const ViewVisualizationPage = () => {
     return <p className="text-red-500 text-center mt-10">Visualization not found.</p>;
   }
 
-  // Ensure we have a valid data source before passing to the ChartRenderer
+  // Ensure we have a valid chart type (default to "bar" if invalid)
+  const validChartTypes = ["bar", "line", "pie", "area", "scatter"];
+  const chartType = validChartTypes.includes(visualization.chartType)
+    ? visualization.chartType
+    : "bar"; // Default to "bar" if chart type is invalid or empty
+
   const chartData = visualization.datasourceId?.data || [];
 
-  // If no data or invalid chart data, display an error or placeholder
   if (!chartData.length) {
     return <p className="text-center text-red-500">No data available to render the chart.</p>;
   }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
+      {/* Go Back Button */}
+      <Button
+        variant="outline"
+        className="mb-6 text-sm"
+        onClick={() => navigate(-1)}
+      >
+        🔙 Go Back
+      </Button>
+
       <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="flex flex-col space-y-4">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 transition-all ease-in-out duration-300 hover:text-blue-500">
             {visualization.title}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 text-base mb-1">
+          <p className="text-gray-600 dark:text-gray-400 text-base mb-1 leading-relaxed">
             {visualization.description}
           </p>
           <p className="text-sm text-muted-foreground">
@@ -67,16 +85,22 @@ const ViewVisualizationPage = () => {
         </Link>
       </div>
 
-      <Card className="rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800">
+      <Card className="rounded-2xl shadow-md border border-gray-200 dark:border-gray-800 transition-all ease-in-out duration-300 hover:shadow-lg">
         <CardContent className="p-6">
           <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
             📊 {visualization?.title}
           </h2>
 
+          {/* Display the X and Y fields with their labels */}
+          <div className="mb-6 text-lg text-gray-800 dark:text-white">
+            <p><strong className="text-lg font-semibold">X Axis Field:</strong> <span className="text-gray-500">{visualization.xField}</span></p>
+            <p><strong className="text-lg font-semibold">Y Axis Field:</strong> <span className="text-gray-500">{visualization.yField}</span></p>
+          </div>
+
           {/* Render the chart */}
-          <div className="w-full h-96 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center">
+          <div className="w-full h-96 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center transition-all ease-in-out duration-300 hover:shadow-xl">
             <ChartRenderer
-              type={visualization.chartType}
+              type={chartType}
               data={chartData}
               xField={visualization.xField}
               yField={visualization.yField}

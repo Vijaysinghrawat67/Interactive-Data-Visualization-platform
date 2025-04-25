@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +18,10 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { createVisualization } from "@/services/Visualization";
-import { getDataSources, getDataSourceSchema } from "@/services/datasource.js";
+import {
+  getDataSources,
+  getDataSourceSchema,
+} from "@/services/datasource.js";
 import { toast } from "sonner";
 import {
   BarChart2,
@@ -48,16 +56,15 @@ const CreateVisualization = () => {
     colorScheme: "default",
   });
 
-  // Fetch data sources
   useEffect(() => {
     const fetchDataSources = async () => {
       try {
         const res = await getDataSources();
-        const sources = res?.data || []; // Correctly access data
+        const sources = res?.data || [];
         if (sources.length === 0) {
           toast.info("No data sources found. Please upload one first.");
         }
-        setDataSources(sources); // Update state
+        setDataSources(sources);
       } catch (err) {
         console.error("Error fetching data sources:", err);
         toast.error("Unable to load data sources.");
@@ -66,17 +73,16 @@ const CreateVisualization = () => {
     fetchDataSources();
   }, []);
 
-  // Fetch schema fields based on selected data source
   useEffect(() => {
     const fetchSchema = async () => {
       if (!selectedSource) return;
       try {
         const res = await getDataSourceSchema(selectedSource);
-        const fields = res?.data?.schema || []; // Correctly access schema fields
+        const fields = res?.data?.schema || [];
         if (fields.length === 0) {
           toast.warning("No schema fields available for the selected data source.");
         }
-        setSchema(fields); // Update state
+        setSchema(fields);
       } catch (err) {
         console.error("Error fetching schema:", err);
         toast.error("Failed to fetch schema.");
@@ -85,7 +91,6 @@ const CreateVisualization = () => {
     fetchSchema();
   }, [selectedSource]);
 
-  // Update config when X and Y fields are selected
   useEffect(() => {
     setConfig((prev) => ({
       ...prev,
@@ -105,11 +110,11 @@ const CreateVisualization = () => {
       await createVisualization({
         title,
         description,
-        datasourceId: selectedSource, // Backend requires "datasourceId"
+        datasourceId: selectedSource,
         chartType,
         xField,
         yField,
-        config, // Include the required config field
+        config,
       });
       toast.success("Visualization created successfully.");
       navigate("/dashboard/visualization");
@@ -120,17 +125,18 @@ const CreateVisualization = () => {
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-6">
-      <Card className="rounded-2xl border shadow-sm">
+    <div className="p-6 max-w-3xl mx-auto space-y-6 text-gray-900 dark:text-gray-100">
+      <Card className="rounded-2xl border shadow-sm bg-white dark:bg-zinc-900">
         <CardHeader>
-          <CardTitle>Create New Visualization</CardTitle>
+          <CardTitle className="text-xl font-semibold">Create New Visualization</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Title Input */}
-            <div>
-              <Label>Title</Label>
+            <div className="space-y-1">
+              <Label htmlFor="title">Title</Label>
               <Input
+                id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Enter visualization title"
@@ -138,9 +144,10 @@ const CreateVisualization = () => {
             </div>
 
             {/* Description Input */}
-            <div>
-              <Label>Description</Label>
+            <div className="space-y-1">
+              <Label htmlFor="description">Description</Label>
               <Textarea
+                id="description"
                 rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -149,12 +156,9 @@ const CreateVisualization = () => {
             </div>
 
             {/* Data Source Selector */}
-            <div>
+            <div className="space-y-1">
               <Label>Data Source</Label>
-              <Select
-                value={selectedSource}
-                onValueChange={setSelectedSource}
-              >
+              <Select value={selectedSource} onValueChange={setSelectedSource}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select Data Source" />
                 </SelectTrigger>
@@ -175,7 +179,7 @@ const CreateVisualization = () => {
             </div>
 
             {/* Chart Type Selector */}
-            <div>
+            <div className="space-y-1">
               <Label>Chart Type</Label>
               <div className="flex flex-wrap gap-3">
                 {chartTypes.map((type) => (
@@ -184,21 +188,20 @@ const CreateVisualization = () => {
                     variant={chartType === type.value ? "default" : "outline"}
                     onClick={() => setChartType(type.value)}
                     type="button"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl shadow-sm hover:bg-accent"
                   >
-                    {type.icon} <span className="ml-2">{type.label}</span>
+                    {type.icon}
+                    {type.label}
                   </Button>
                 ))}
               </div>
             </div>
 
-            {/* Field Selectors for X and Y Axes */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
+            {/* Axis Field Selectors */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
                 <Label>X-Axis</Label>
-                <Select
-                  value={xField}
-                  onValueChange={setXField}
-                >
+                <Select value={xField} onValueChange={setXField}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select X field" />
                   </SelectTrigger>
@@ -217,12 +220,10 @@ const CreateVisualization = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
+
+              <div className="space-y-1">
                 <Label>Y-Axis</Label>
-                <Select
-                  value={yField}
-                  onValueChange={setYField}
-                >
+                <Select value={yField} onValueChange={setYField}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select Y field" />
                   </SelectTrigger>
@@ -244,7 +245,7 @@ const CreateVisualization = () => {
             </div>
 
             {/* Chart Preview */}
-            <div>
+            <div className="pt-4">
               <ChartRenderer
                 chartType={chartType}
                 dataSourceId={selectedSource}
@@ -254,7 +255,10 @@ const CreateVisualization = () => {
             </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full rounded-xl">
+            <Button
+              type="submit"
+              className="w-full rounded-xl font-medium shadow-md hover:shadow-lg transition"
+            >
               Create Visualization
             </Button>
           </form>

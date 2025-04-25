@@ -50,28 +50,63 @@ const ViewDataSource = () => {
     );
   }
 
-  const { fields: schemaFields = [], fulldata: data = [], createdAt, sourceType, name } =
-    dataSource;
+  const {
+    fields: schemaFields = [],
+    fulldata: data = [],
+    createdAt,
+    sourceType,
+    name,
+  } = dataSource;
 
-  const renderDataTable = () => {
+  const renderField = (fieldValue) => {
+    if (typeof fieldValue === "object" && fieldValue !== null) {
+      if (fieldValue.name) return fieldValue.name;
+      if (fieldValue.city && fieldValue.street)
+        return `${fieldValue.street}, ${fieldValue.city}`;
+      if (fieldValue.city) return fieldValue.city;
+      if (fieldValue.lat && fieldValue.lng)
+        return `Lat: ${fieldValue.lat}, Lng: ${fieldValue.lng}`;
+      return "Details available";
+    }
+
+    return fieldValue != null ? fieldValue.toString() : "-";
+  };
+
+  const renderTextParagraphs = () => {
+    return (
+      <div className="space-y-6 mt-4">
+        {data.map((entry, index) => (
+          <div
+            key={index}
+            className="p-4 border rounded-md bg-gray-50 dark:bg-gray-800 shadow-sm space-y-2"
+          >
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-semibold">
+              Record #{index + 1}
+            </p>
+            <div className="space-y-1">
+              {schemaFields.map((field) => (
+                <p
+                  key={field}
+                  className="text-sm text-gray-700 dark:text-gray-200"
+                >
+                  <span className="font-medium capitalize">{field}:</span>{" "}
+                  {renderField(entry[field])}
+                </p>
+              ))}
+            </div>
+          </div>
+        ))}
+        <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+          Showing {data.length} {data.length === 1 ? "record" : "records"}
+        </div>
+      </div>
+    );
+  };
+
+  const renderTable = () => {
     if (!Array.isArray(data) || data.length === 0 || !Array.isArray(schemaFields)) {
       return <p className="text-gray-500 dark:text-gray-400">No data available to display.</p>;
     }
-
-    const renderField = (fieldValue) => {
-      if (typeof fieldValue === "object" && fieldValue !== null) {
-        // Handle nested objects: Pick key details if available
-        if (fieldValue.name) return fieldValue.name; // Display `name` for company or person
-        if (fieldValue.city && fieldValue.street)
-          return `${fieldValue.street}, ${fieldValue.city}`; // Display address summary
-        if (fieldValue.city) return fieldValue.city; // Display `city` if available
-        if (fieldValue.lat && fieldValue.lng)
-          return `Lat: ${fieldValue.lat}, Lng: ${fieldValue.lng}`; // Display geo coordinates
-        return "Details available"; // Fallback for nested objects
-      }
-
-      return fieldValue != null ? fieldValue.toString() : "-"; // Fallback for primitive values
-    };
 
     return (
       <div className="overflow-auto max-h-[500px] border rounded-md mt-4 bg-gray-50 dark:bg-gray-800 shadow-md">
@@ -92,8 +127,12 @@ const ViewDataSource = () => {
             {data.map((row, rowIndex) => (
               <tr key={rowIndex} className="border-t hover:bg-gray-50 dark:hover:bg-gray-700">
                 {schemaFields.map((field) => (
-                  <td key={field} className="px-4 py-2 whitespace-nowrap">
-                    {renderField(row[field])} {/* Process each field */}
+                  <td
+                    key={field}
+                    className="px-4 py-2 whitespace-nowrap"
+                    style={{ width: "150px" }}
+                  >
+                    {renderField(row[field])}
                   </td>
                 ))}
               </tr>
@@ -119,7 +158,6 @@ const ViewDataSource = () => {
 
       <Card className="bg-white dark:bg-gray-900 shadow-md rounded-lg border border-gray-300 dark:border-gray-700">
         <CardContent className="p-6 space-y-6">
-          {/* Data Source Details Section */}
           <div className="space-y-2">
             <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
               📄 Data Source Details
@@ -132,8 +170,6 @@ const ViewDataSource = () => {
               {createdAt ? format(new Date(createdAt), "PPpp") : "Date not available"}
             </p>
           </div>
-
-          {/* Schema Fields Section */}
           <div className="space-y-2">
             <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-200">
               Schema Fields
@@ -143,8 +179,8 @@ const ViewDataSource = () => {
             </p>
           </div>
 
-          {/* Data Table Section */}
-          {renderDataTable()}
+          {/* Only change layout if sourceType === "text" */}
+          {sourceType === "text" ? renderTextParagraphs() : renderTable()}
         </CardContent>
       </Card>
     </div>
