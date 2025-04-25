@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import { type } from "os";
 
 const dataSourceSchema = new Schema(
   {
@@ -7,6 +8,12 @@ const dataSourceSchema = new Schema(
       ref: "User",
       required: true,
       index: true,
+    },
+
+    name : {
+      type : String,
+      required : true,
+      trim : true,
     },
     sourceType: {
       type: String,
@@ -24,6 +31,14 @@ const dataSourceSchema = new Schema(
     data: {
       type: [Schema.Types.Mixed],
       default: [],
+    },
+    xAxis:{
+      type: String,
+      default: ""
+    },
+    yAxis:{
+      type: String,
+      default: ""
     },
     status: {
       type: String,

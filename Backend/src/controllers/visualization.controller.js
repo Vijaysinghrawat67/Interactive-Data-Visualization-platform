@@ -10,6 +10,9 @@ import { User } from '../models/user.model.js';
 // create visualization
 const createVisualization = asyncHandler(async(req, res) => {
     const {title, description, chartType, xField, yField, config, datasourceId} = req.body;
+    //console.log("Request body:", req.body);
+    //console.log("User ID:", req.user._id);
+    //console.log("Datasource ID:", datasourceId);
 
     if(!title || !chartType || !xField || !yField || !datasourceId){
         throw new ApiError(
@@ -174,6 +177,10 @@ const getSharedVisualizations = asyncHandler(async(req, res) => {
     ))
 });
 
+
+
+
+
 export{
     createVisualization,
     getUserVisualization,
@@ -181,5 +188,6 @@ export{
     updateVisualization,
     deleteVisualization,
     iviteCollaborator,
-    getSharedVisualizations
+    getSharedVisualizations,
+    
 }

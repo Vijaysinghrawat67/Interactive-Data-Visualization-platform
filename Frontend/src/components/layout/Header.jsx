@@ -34,8 +34,8 @@ export default function Header() {
           <Link to="/features" className="text-gray-700 dark:text-gray-300 hover:text-blue-600">
             Features
           </Link>
-          <Link to="/about" className="text-gray-700 dark:text-gray-300 hover:text-blue-600">
-            About
+          <Link to="/contact" className="text-gray-700 dark:text-gray-300 hover:text-blue-600">
+            Contact
           </Link>
           <button onClick={() => setDarkMode(!darkMode)} className="p-2">
             {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-gray-700" />}
@@ -79,11 +79,11 @@ export default function Header() {
               Features
             </Link>
             <Link
-              to="/about"
+              to="/contact"
               className="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600"
               onClick={() => setMenuOpen(false)}
             >
-              About
+              Contact
             </Link>
           </div>
 

@@ -14,6 +14,10 @@ const uploadfileData = asyncHandler(async (req, res) => {
     if (!req.file) {
       throw new ApiError('file not found', 400);
     }
+    const {name} = req.body;
+    if(!name){
+      throw new ApiError("Name is required for the data sources", 400)
+    }
 
     const fileExt = path.extname(req.file.originalname).toLowerCase();
 
@@ -43,6 +47,7 @@ const uploadfileData = asyncHandler(async (req, res) => {
 
     const newDataObj = {
       userId: req.user?._id,
+      name,
       sourceType: fileExt === '.csv' ? 'csv' : 'xlsx',
       sourceDetails: {
         filePath: req.file?.path,
@@ -72,11 +77,12 @@ const uploadfileData = asyncHandler(async (req, res) => {
 
 
 const uploadApiData = asyncHandler(async (req, res) => {
-  const { apiUrl } = req.body;
+  const { apiUrl , name} = req.body;
 
-  if (!apiUrl) {
-      throw new ApiError(400, "API URL is required");
+  if (!apiUrl && !name) {
+      throw new ApiError(400, "API URL and Name is required");
   }
+
 
   let response;
   try {
@@ -105,6 +111,7 @@ const uploadApiData = asyncHandler(async (req, res) => {
 
   const newData = new DataSource({
       userId: req.user._id,
+      name,
       sourceType: 'api',
       sourceDetails: {
           url: apiUrl
@@ -123,29 +130,42 @@ const uploadApiData = asyncHandler(async (req, res) => {
 
 
 const uploadTextData = asyncHandler(async (req, res) => {
-    const { text } = req.body;
-    if (!text) {
-        throw new ApiError(400, "Text input is required");
-    }
+  const { text, name } = req.body;
 
-    const analysisResult = analyzerText(req.body.text);
+  // Validate input
+  if (!text || typeof text !== "string") {
+    throw new ApiError(
+      400,
+      "Invalid input: Text is required and must be a non-empty string."
+    );
+  }
 
-     const newTextData = new DataSource({
-        userId: req.user._id,
-        sourceType: 'text',
-        schema: Object.keys(analysisResult),
-        data: [analysisResult], // 🔥 Save the actual analysis result
-        status: 'pending'
-    });
+  if (!name || typeof name !== "string") {
+    throw new ApiError(
+      400,
+      "Invalid input: Name is required and must be a non-empty string."
+    );
+  }
 
-    await newTextData.save();
+  // Analyze the text
+  const analysisResult = analyzerText(text);
 
-    return res.status(201)
-        .json(
-            new ApiResponse(201, newTextData, "Text data processed successfully")
+  const newTextData = new DataSource({
+    userId: req.user._id,
+    name,
+    sourceType: "text",
+    schemaFields: Object.keys(analysisResult),
+    data: [analysisResult], // Save the structured analysis result
+    status: "pending",
+  });
 
-        )
+  await newTextData.save();
+
+  return res.status(201).json(
+    new ApiResponse(201, newTextData, "Text data processed successfully")
+  );
 });
+
 
 const getAllDataSources = asyncHandler(async (req, res) => {
   const uderId = req.user._id;
@@ -172,8 +192,19 @@ const getSingleDataSource = asyncHandler(async(req, res) => {
     if (!dataSource) {
       return res.status(404).json({ error: "Data source not found." });
     }
+    //debug
+    //console.log("fetched data source:", dataSource);
 
-    res.status(200).json({ data: dataSource });
+    res.status(200).json({ 
+      data : {
+        name : dataSource.name,
+        fields : dataSource.schemaFields,
+        fulldata : dataSource.data,
+        createdAt : dataSource.createdAt,
+        sourceType : dataSource.sourceType
+      }
+     });
+
   } catch (err) {
     console.error("Error fetching data source:", err);
     res.status(500).json({ error: "Server error while retrieving data source." });
@@ -182,10 +213,30 @@ const getSingleDataSource = asyncHandler(async(req, res) => {
 });
 
 
+
+const getDataSourceScheam = asyncHandler(async(req, res) => {
+  const {id} = req.params;
+
+  const dataSource = await DataSource.findById(id);
+
+if (!dataSource) {
+  throw new ApiError(404, "Data source not found");
+}
+
+const schemaFields = dataSource.schemaFields;
+if (!schemaFields || schemaFields.length === 0) {
+  throw new ApiError(400, "Data source schema is not available");
+}
+
+return res.status(200).json(new ApiResponse(200, 
+  { schema: schemaFields, sampleData: dataSource.data }, "Schema fetched successfully"));
+})
+
 export {
     uploadfileData,
     uploadApiData,
     uploadTextData,
     getAllDataSources,
-    getSingleDataSource
+    getSingleDataSource,
+    getDataSourceScheam
 }

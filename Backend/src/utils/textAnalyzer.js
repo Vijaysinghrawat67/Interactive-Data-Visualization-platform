@@ -1,15 +1,17 @@
-import natural from 'natural';
+import natural from "natural";
 
 const analyzerText = (text) => {
-    const tokenizer = new natural.WordTokenizer();
-    const words = tokenizer.tokenize(text).length;
+  if (!text || typeof text !== "string") {
+    throw new TypeError("Invalid input: Text must be a non-empty string.");
+  }
 
-    return {
-        originalText: text,
-        wordCount : words,
-    };
+  const tokenizer = new natural.WordTokenizer();
+  const words = tokenizer.tokenize(text).length;
+
+  return {
+    originalText: text, // Keep the original structure
+    wordCount: words, // Provide a word count
+  };
 };
 
-export{
-    analyzerText
-};
+export { analyzerText };

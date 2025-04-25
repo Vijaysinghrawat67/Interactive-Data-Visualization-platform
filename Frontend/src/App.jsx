@@ -11,6 +11,7 @@ const LandingPage = React.lazy(() => import("@/pages/LandingPage.jsx"));
 const FeaturesPage = React.lazy(() => import("@/pages/FeaturesPage.jsx"));
 const LoginPage = React.lazy(() => import("@/pages/Login.jsx"));
 const RegisterPage = React.lazy(() => import("@/pages/Register.jsx"));
+const ContactPage = React.lazy( () => import("@/pages/Contact.jsx"))
 
 // Dashboard Layout and children
 const DashboardPage = React.lazy(() => import("@/pages/dashboard/index.jsx"));
@@ -39,6 +40,7 @@ function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<LandingPage />} />
             <Route  path="features" element={< FeaturesPage />}/>
+            <Route  path="contact" element={< ContactPage/>}/> 
             <Route path="login" element={<LoginPage />} />
             <Route path="register" element={<RegisterPage />} />
           </Route>

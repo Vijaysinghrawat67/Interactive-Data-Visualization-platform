@@ -21,12 +21,11 @@ const ViewDataSource = () => {
 
         // Dynamically derive schemaFields if empty
         if (data && (!data.schemaFields || data.schemaFields.length === 0)) {
-          if (Array.isArray(data.data) && data.data.length > 0) {
-            data.schemaFields = Object.keys(data.data[0]); // Extract schema fields from first object in data
+          if (Array.isArray(data.fulldata) && data.fulldata.length > 0) {
+            data.schemaFields = Object.keys(data.fulldata[0]);
           }
         }
 
-        //console.log("Processed data source:", data); // Debugging log
         setDataSource(data);
       } catch (err) {
         console.error("Failed to fetch data source:", err);
@@ -44,47 +43,46 @@ const ViewDataSource = () => {
   }
 
   if (!dataSource) {
-    return <p className="text-center text-red-500">Data source not found.</p>;
+    return (
+      <p className="text-center text-red-500 dark:text-red-400">
+        Data source not found.
+      </p>
+    );
   }
 
-  const { sourceType, schemaFields = [], data = [], createdAt } = dataSource;
+  const { fields: schemaFields = [], fulldata: data = [], createdAt, sourceType, name } =
+    dataSource;
 
   const renderDataTable = () => {
     if (!Array.isArray(data) || data.length === 0 || !Array.isArray(schemaFields)) {
-      return <p className="text-gray-500">No data available to display.</p>;
+      return <p className="text-gray-500 dark:text-gray-400">No data available to display.</p>;
     }
 
-    if (sourceType === "text") {
-      // Enhanced styled display for text-based data
-      const textData = data[0]; // Assuming it's a single object in an array
-      return (
-        <div className="space-y-6 mt-6 border rounded-md p-6 bg-gray-50 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-700">Text Data Analysis</h3>
-          <div className="bg-white p-4 rounded-md shadow-sm border">
-            <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-600">Original Text:</h4>
-              <p className="text-gray-800 italic border-l-4 border-blue-500 pl-4 break-words">
-                {textData.originalText}
-              </p>
-            </div>
-            <div>
-              <h4 className="text-sm font-medium text-gray-600">Word Count:</h4>
-              <p className="text-gray-800 font-semibold border-l-4 border-green-500 pl-4">
-                {textData.wordCount}
-              </p>
-            </div>
-          </div>
-        </div>
-      );
-    }
+    const renderField = (fieldValue) => {
+      if (typeof fieldValue === "object" && fieldValue !== null) {
+        // Handle nested objects: Pick key details if available
+        if (fieldValue.name) return fieldValue.name; // Display `name` for company or person
+        if (fieldValue.city && fieldValue.street)
+          return `${fieldValue.street}, ${fieldValue.city}`; // Display address summary
+        if (fieldValue.city) return fieldValue.city; // Display `city` if available
+        if (fieldValue.lat && fieldValue.lng)
+          return `Lat: ${fieldValue.lat}, Lng: ${fieldValue.lng}`; // Display geo coordinates
+        return "Details available"; // Fallback for nested objects
+      }
+
+      return fieldValue != null ? fieldValue.toString() : "-"; // Fallback for primitive values
+    };
 
     return (
-      <div className="overflow-auto max-h-[500px] border rounded-md mt-2">
-        <table className="min-w-full text-sm">
-          <thead className="bg-gray-100 sticky top-0 z-10">
+      <div className="overflow-auto max-h-[500px] border rounded-md mt-4 bg-gray-50 dark:bg-gray-800 shadow-md">
+        <table className="min-w-full text-sm text-gray-800 dark:text-gray-100">
+          <thead className="bg-gray-100 dark:bg-gray-700 sticky top-0 z-10">
             <tr>
               {schemaFields.map((field) => (
-                <th key={field} className="text-left px-4 py-2 font-medium whitespace-nowrap">
+                <th
+                  key={field}
+                  className="text-left px-4 py-2 font-medium whitespace-nowrap text-gray-600 dark:text-gray-300"
+                >
                   {field}
                 </th>
               ))}
@@ -92,17 +90,17 @@ const ViewDataSource = () => {
           </thead>
           <tbody>
             {data.map((row, rowIndex) => (
-              <tr key={rowIndex} className="border-t">
+              <tr key={rowIndex} className="border-t hover:bg-gray-50 dark:hover:bg-gray-700">
                 {schemaFields.map((field) => (
                   <td key={field} className="px-4 py-2 whitespace-nowrap">
-                    {row[field] != null ? row[field].toString() : "-"}
+                    {renderField(row[field])} {/* Process each field */}
                   </td>
                 ))}
               </tr>
             ))}
           </tbody>
         </table>
-        <div className="text-xs text-gray-500 px-4 py-2 border-t">
+        <div className="text-xs text-gray-500 dark:text-gray-400 px-4 py-2 border-t">
           Showing {data.length} {data.length === 1 ? "record" : "records"}
         </div>
       </div>
@@ -111,27 +109,41 @@ const ViewDataSource = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-      <Button variant="outline" onClick={() => navigate("/dashboard/datasource")}>
+      <Button
+        variant="outline"
+        onClick={() => navigate("/dashboard/datasource")}
+        className="text-gray-800 dark:text-gray-100 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+      >
         ← Go Back to List
       </Button>
 
-      <Card>
+      <Card className="bg-white dark:bg-gray-900 shadow-md rounded-lg border border-gray-300 dark:border-gray-700">
         <CardContent className="p-6 space-y-6">
-          <div>
-            <h2 className="text-2xl font-bold">📄 Data Source Details</h2>
-            <p className="text-sm text-muted-foreground">
+          {/* Data Source Details Section */}
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+              📄 Data Source Details
+            </h2>
+            <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+              Name: <span className="capitalize">{name || "Unnamed Data Source"}</span>
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Type: <span className="capitalize">{sourceType}</span> | Uploaded on:{" "}
-              {format(new Date(createdAt), "PPpp")}
+              {createdAt ? format(new Date(createdAt), "PPpp") : "Date not available"}
             </p>
           </div>
 
-          <div>
-            <h3 className="font-semibold text-lg">Schema Fields</h3>
-            <p className="text-sm text-gray-600 break-words">
+          {/* Schema Fields Section */}
+          <div className="space-y-2">
+            <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-200">
+              Schema Fields
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 break-words">
               {schemaFields.length > 0 ? schemaFields.join(", ") : "No schema detected"}
             </p>
           </div>
 
+          {/* Data Table Section */}
           {renderDataTable()}
         </CardContent>
       </Card>

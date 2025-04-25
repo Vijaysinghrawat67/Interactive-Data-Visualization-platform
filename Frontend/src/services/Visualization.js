@@ -23,6 +23,9 @@ const deleteVisualization = (id) =>
     api.delete(`/api/v1/visualization/${id}`);
 
 
+
+
+
 export {
     createVisualization,
     getUserVisualization,

@@ -37,19 +37,39 @@ const uploadCsvOrExcel  = (formdata) => {
 };
 
 
-const uploadTest = (text) => {
-    return api.post("/api/v1/upload/upload-text", {text}, {
+const uploadText = ({name, text}) => {
+    return api.post("/api/v1/upload/upload-text", 
+      {name, text}, {
       withCredentials: true
     });
 };
 
 
-const uploadApi = (url) => {
-  return api.post("/api/v1/upload/upload-api", {url}, {withCredentials : true})
+const uploadApi = ({name, apiUrl}) => {
+  return api.post("/api/v1/upload/upload-api",
+     {name, apiUrl},
+      {withCredentials : true})
 }
+
+const getDataSourceSchema = async (dataSourceId) => {
+  try {
+    // Make a GET request to fetch the schema of the given data source
+    const response = await api.get(`/api/v1/upload/${dataSourceId}/schema`, {
+      withCredentials: true, // Make sure credentials are included
+    });
+    
+    // Return the schema data received from the backend
+    return response.data;
+  } catch (error) {
+    // Log the error and throw a more specific error message
+    console.error("Error fetching data source schema:", error);
+    throw new Error("Failed to fetch data source schema");
+  }
+};
 
 export{
   uploadCsvOrExcel,
-  uploadTest,
-  uploadApi
+  uploadText,
+  uploadApi,
+  getDataSourceSchema
 }
