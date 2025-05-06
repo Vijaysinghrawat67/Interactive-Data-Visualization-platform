@@ -11,75 +11,86 @@ import path from 'path';
 
 
 
-const createExport = asyncHandler(async( req, res) => {
+const createExport = asyncHandler(async (req, res) => {
     try {
-        const {exportFormat} = req.body;
-        const {visualizationId} =  req.params;
-        const userId = req.user._id;
-
-        const validateFormats = ['png', 'pdf', 'csv', 'json'];
-        if(!validateFormats.includes(exportFormat)){
-            throw new ApiError(400, 'Invalid export format');
-        }
-
-        const visualization = await Visualization.findById(visualizationId)
+      const { exportFormat, visualizationIds, title, description, layout } = req.body;
+      const userId = req.user._id;
+  
+      const validFormats = ['png', 'pdf', 'csv', 'json'];
+      if (!validFormats.includes(exportFormat)) {
+        throw new ApiError(400, 'Invalid export format');
+      }
+  
+      const visualizations = await Visualization.find({ _id: { $in: visualizationIds }, userId })
         .populate('datasourceId');
-        if(!visualization || visualization.userId.toString() !== userId.toString()){
-            throw new ApiError(404, "Visualization not find or unauthorized")
-        }
-
-
-        const fileName = `${uuidv4()}_${visualization.title.replace(/\s+/g, '_')}`;
-        let filePath;
-
-
-        if(['png', 'pdf'].includes(exportFormat)){
-            const html = `<html><body><h3>${visualization.title}
-            </h3><div id="chart">${JSON.stringify(visualization.config)}</div></body></html>`;
-            filePath = await exportChartAsFile(html, exportFormat, fileName);
-        } else{
-            const data = visualization.datasourceId.data;
-            filePath = exportDataFile(data, exportFormat, fileName);
-        }
-
-        const downloadLink = `/api/v1/exports/download/${fileName}.${exportFormat}`;
-
-        const exportRecord = await Export.create({
-            userId,
-            visualizationId,
-            exportFormat,
-            downloadLink
-        });
-
-        return res.status(201)
-        .json(
-            new ApiResponse(201, 
-                downloadLink, {exportId : exportRecord._id}, 
-                "Export successfullt"
-    )
-        )
+  
+      if (!visualizations.length) {
+        throw new ApiError(404, 'No visualizations found or unauthorized');
+      }
+  
+      const fileName = `${uuidv4()}_${title?.replace(/\s+/g, '_') || 'export'}`;
+      let filePath;
+  
+      if (['png', 'pdf'].includes(exportFormat)) {
+        const htmlContent = `
+          <html>
+          <body>
+            <h1>${title || 'Untitled Export'}</h1>
+            <p>${description || ''}</p>
+            ${visualizations.map(viz => `
+              <div style="margin-bottom: 20px;">
+                <h3>${viz.title}</h3>
+                <div id="chart">${JSON.stringify(viz.config)}</div>
+              </div>
+            `).join('')}
+          </body>
+          </html>
+        `;
+  
+        filePath = await exportChartAsFile(htmlContent, exportFormat, fileName);
+      } else {
+        // Merge data from all visualizations
+        const mergedData = visualizations.flatMap(viz => viz.datasourceId.data);
+        filePath = exportDataFile(mergedData, exportFormat, fileName);
+      }
+  
+      const downloadLink = `/api/v1/exports/download/${fileName}.${exportFormat}`;
+  
+      const exportRecord = await Export.create({
+        userId,
+        visualizations: visualizationIds,
+        title,
+        description,
+        layout,
+        exportFormat,
+        downloadLink,
+      });
+  
+      return res.status(201).json(
+        new ApiResponse(201, downloadLink, { exportId: exportRecord._id }, "Export created successfully")
+      );
     } catch (error) {
-       // console.error('Export error', error);
-        throw new ApiError(500, "server error during export")
+      //console.error("❌ Export creation error:", error);
+      throw new ApiError(500, "Server error during export creation");
     }
-});
+  });
+  
 
 
-const listExports = asyncHandler(async(req, res) => {
+  const listExports = asyncHandler(async (req, res) => {
     try {
-        const {visualizationId} = req.params;
-        const userId = req.user._id;
-
-        const exports = await Export.find({userId, visualizationId})
-        .sort({createdAt : -1});
-        return res.status(200)
-        .json(
-            new ApiResponse(200, exports, "export record fetched successfully")
-        )
+      const userId = req.user._id;
+  
+      const exports = await Export.find({ userId }).sort({ createdAt: -1 });
+      
+      return res.status(200).json(
+        new ApiResponse(200, exports, "Export records fetched successfully")
+      );
     } catch (error) {
-        throw new ApiError(500, "server error during fetching export records")
+      throw new ApiError(500, "Server error during fetching export records");
     }
-});
+  });
+  
 
 
 const downloadExport = asyncHandler(async(req, res) => {

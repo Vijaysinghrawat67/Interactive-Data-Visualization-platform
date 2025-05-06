@@ -98,7 +98,14 @@ const ViewVisualizationPage = () => {
           </div>
 
           {/* Render the chart */}
-          <div className="w-full h-96 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center transition-all ease-in-out duration-300 hover:shadow-xl">
+          
+            {/* {console.log("Chart Data:", chartData)}
+            {console.log("Visualization xField:", visualization.xField)} 
+            {console.log("Visualization yField:", visualization.yField)}
+            {console.log("Chart Type:", chartType)} */}
+            
+        
+          <div className="w-full h-[550px] bg-gray-100 dark:bg-gray-800 rounded-2xl flex flex-col  items-center justify-center transition-all ease-in-out duration-500 p-6 hover:shadow-2xl"> 
             <ChartRenderer
               type={chartType}
               data={chartData}

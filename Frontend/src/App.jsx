@@ -29,6 +29,9 @@ const GetSingleDataSource = React.lazy( () => import("@/pages/dashboard/datasour
 
 const ActivityLogs = React.lazy(() => import("@/pages/dashboard/Logs.jsx"));
 const SettingPage = React.lazy(() => import("@/pages/dashboard/Setting.jsx"));
+//const Dashboard = React.lazy( () => import("@/pages/dashboard/dash/Dashboard.jsx"))
+const ExportPage = React.lazy( () => import("@/pages/dashboard/export/ExportPage.jsx"))
+const ViewExportPage = React.lazy( () => import("@/pages/dashboard/export/ViewExportPage.jsx"))
 
 function App() {
   return (
@@ -68,6 +71,11 @@ function App() {
               </Route>
               
               <Route path="settings" element={<SettingPage />} />
+              <Route path="export" >
+                  <Route index element={<ExportPage />} />
+                  <Route path="view" element={<ViewExportPage />} />
+              </Route>
+              
             </Route>
           </Route>
         </Routes>

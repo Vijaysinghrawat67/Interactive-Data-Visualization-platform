@@ -2,6 +2,8 @@ import {ApiResponse} from '../utils/ApiResponse.js';
 import {ApiError} from '../utils/ApiError.js';
 import {asyncHandler} from '../utils/AsyncHandler.js';
 import {User} from '../models/user.model.js';
+import {Dashboard} from '../models/dashboard.model.js';
+
 
 
 const userDashboard = asyncHandler(async (req, res) => {
@@ -55,8 +57,56 @@ const adminDashboard = asyncHandler(async (req, res) => {
     );
 });
 
+const myDashboard = asyncHandler(async (req, res) => {
+    if (!req.user?._id) {
+        throw new ApiError(401, "Unauthorized - User not found in request");
+    }
+
+    const dashboard = await Dashboard.findOne({ userId: req.user._id });
+
+    if (!dashboard) {
+        throw new ApiError(404, "Dashboard not found");
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, dashboard, "Dashboard found successfully")
+    );
+});
+
+
+const saveDashboard = asyncHandler(async (req, res) => {
+    try {
+        const { charts } = req.body;
+
+        if (!charts || !Array.isArray(charts)) {
+            return res.status(400).json({ message: "Invalid charts data" });
+        }
+        
+        let dashboard = await Dashboard.findOne({ userId: req.user._id });
+
+        if (!dashboard) {
+            dashboard = new Dashboard({
+                userId: req.user.id,
+                charts
+            });
+        } else {
+            dashboard.charts = charts;
+        }
+        await dashboard.save(); // Save the document instance
+
+        return res.status(200).json({
+            message: "Dashboard successfully saved"
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Server error" });
+    }
+});
+
 
 export{
     userDashboard,
-    adminDashboard
+    adminDashboard,
+    myDashboard,
+    saveDashboard
 }

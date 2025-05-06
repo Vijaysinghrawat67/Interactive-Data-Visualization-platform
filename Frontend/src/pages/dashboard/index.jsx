@@ -1,13 +1,13 @@
 // src/pages/dashboard/DashboardLayout.jsx
 import { useEffect, useState } from "react";
 import { Outlet, NavLink, useNavigate, Link } from "react-router-dom";
-import { Menu, LogOut, X, BarChart3, User, Database, FileText, Settings } from "lucide-react";
+import { Menu, LogOut, X, BarChart3, User, Database, FileText, Settings, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import api from "@/services/axios";
 import { toast } from "sonner";
 
 export default function DashboardLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Manage sidebar state
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
@@ -41,15 +41,20 @@ export default function DashboardLayout() {
     { label: "Visualizations", path: "/dashboard/visualization", icon: <BarChart3 /> },
     { label: "Activity Logs", path: "/dashboard/logs", icon: <FileText /> },
     { label: "Settings", path: "/dashboard/settings", icon: <Settings /> },
+    { label: "Export", path: "/dashboard/export", icon: <Share2 /> },
   ];
 
   return (
     <div className="flex min-h-screen bg-gray-100 dark:bg-slate-900">
-      {/* Sidebar */}
-      <aside className={`w-64 bg-white dark:bg-slate-800 shadow-md transform transition-transform duration-300 z-40 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:static`}>
+      {/* Sidebar - Always hidden by default, shown only if sidebarOpen */}
+      <aside
+        className={`w-64 bg-white dark:bg-slate-800 shadow-md transform transition-transform duration-300 z-40 fixed top-0 left-0 h-full ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         <div className="p-6 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center">
           <Link to="/" className="text-xl font-bold text-blue-600 dark:text-white">
-               DataViz
+            DataViz
           </Link>
           <button onClick={() => setSidebarOpen(false)} className="md:hidden">
             <X className="w-5 h-5 text-gray-500 dark:text-gray-300" />
@@ -65,6 +70,7 @@ export default function DashboardLayout() {
                   isActive ? "bg-blue-500 text-white dark:bg-blue-600" : "text-gray-700 dark:text-gray-300"
                 }`
               }
+              onClick={() => setSidebarOpen(false)} // Close sidebar on nav item click
             >
               {item.icon}
               {item.label}
@@ -80,10 +86,10 @@ export default function DashboardLayout() {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col">
-        {/* Top Bar (mobile toggle) */}
-        <div className="md:hidden p-4 flex items-center justify-between bg-white dark:bg-slate-800 shadow">
-          <button onClick={() => setSidebarOpen(true)}>
-            <Menu className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+        {/* Top Bar with hamburger icon and greeting */}
+        <div className="p-4 flex items-center justify-between bg-white dark:bg-slate-800 shadow">
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-gray-600 dark:text-gray-300">
+            <Menu className="w-6 h-6" />
           </button>
           {user && (
             <span className="text-sm text-gray-800 dark:text-gray-100">Hello, {user.name}</span>
