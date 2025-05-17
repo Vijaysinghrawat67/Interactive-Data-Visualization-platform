@@ -20,8 +20,14 @@ const downloadExport = async(fileName) => {
     return response;
 }
 
+const deleteExport = async(exportId) => {
+    return await api.delete(`/api/v1/export/delete/${exportId}`);
+}
+
+
 export{
     saveExport,
     getAllExports,
-    downloadExport
+    downloadExport,
+    deleteExport
 }

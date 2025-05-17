@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { getAllExports, downloadExport } from "@/services/apiServices.js";
+import { getAllExports, downloadExport, deleteExport } from "@/services/apiServices.js";
 import { toast } from "sonner";
-import Modal from "@/components/ui/Modal.jsx"; 
-import { ChartPreview } from "@/components/charts/ChartPreview.jsx"; 
+import Modal from "@/components/ui/Modal.jsx";
+import { ChartPreview } from "@/components/charts/ChartPreview.jsx";
 
 const ViewExportsPage = () => {
   const [exports, setExports] = useState([]);
@@ -25,13 +25,20 @@ const ViewExportsPage = () => {
     const fileName = downloadLink.split("/").pop();
     try {
       const response = await downloadExport(fileName);
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+
+      // Use the content-type from headers to create correct Blob MIME type
+      const contentType = response.headers['content-type'] || 'application/octet-stream';
+      const blob = new Blob([response.data], { type: contentType });
+      const url = window.URL.createObjectURL(blob);
+
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", fileName);
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
+
     } catch {
       toast.error("Download failed");
     }
@@ -42,8 +49,33 @@ const ViewExportsPage = () => {
     setIsPreviewOpen(true);
   };
 
+  const handleDelete = async (exportId) => {
+    const confirmed = window.confirm("Are you sure you want to delete this export?");
+    if (!confirmed) return;
+
+    try {
+      await deleteExport(exportId);
+      toast.success("Export deleted successfully");
+
+      setExports((prev) => prev.filter((e) => e._id !== exportId));
+    }
+    catch {
+      toast.error("Failed to delete export record");
+    }
+  };
+
+  const handleGoBack = () => {
+    window.history.back();
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
+      <button
+        onClick={handleGoBack}
+        className="mb-6 px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-600 transition"
+      >
+        ← Go Back
+      </button>
       <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">
         📂 Your Export Records
       </h1>
@@ -75,6 +107,12 @@ const ViewExportsPage = () => {
                   className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
                 >
                   ⬇️ Download
+                </button>
+                <button
+                  onClick={() => handleDelete(exp._id)}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                >
+                  🗑️ Delete
                 </button>
               </div>
             </div>

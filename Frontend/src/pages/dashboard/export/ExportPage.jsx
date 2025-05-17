@@ -146,27 +146,28 @@ const ExportPage = () => {
 
   return (
     <motion.div
-      className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-8 space-y-8"
+      className="max-w-7xl mx-auto px-6 py-10 space-y-10"
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <header className="text-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+      <header className="text-center">
+        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white">
           📦 Build Your Export
         </h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">
-          Select charts, organize layout, and save your export.
+        <p className="mt-2 text-lg text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
+          Select charts, organize the layout, and save your export.
         </p>
         <button
           onClick={handleViewExports}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
         >
           View Existing Exports
         </button>
       </header>
 
-      <section>
+      {/* Export Settings Section */}
+      <section className="bg-gray-50 dark:bg-gray-800 rounded-xl p-8 shadow-md max-w-4xl mx-auto">
         <ExportSettings
           title={title}
           setTitle={setTitle}
@@ -178,15 +179,21 @@ const ExportPage = () => {
         />
       </section>
 
-      <section>
+      {/* Chart Selector Section */}
+      <section className="bg-gray-50 dark:bg-gray-800 rounded-xl p-8 shadow-md max-w-4xl mx-auto">
         <ChartSelector onSelectChart={handleChartAdd} />
       </section>
 
-      <section id="export-content" className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow">
-        <header className="mb-4">
-          <h1 className="text-2xl font-bold">{title}</h1>
-          <p className="text-gray-600">{description}</p>
+      {/* Export Preview Section */}
+      <section
+        id="export-content"
+        className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 max-w-6xl mx-auto"
+      >
+        <header className="mb-6 border-b border-gray-300 dark:border-gray-700 pb-4">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{title || "Untitled Export"}</h2>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">{description || "No description provided."}</p>
         </header>
+
         <ExportLayout
           charts={selectedCharts}
           layout={layoutConfig}

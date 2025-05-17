@@ -56,8 +56,8 @@ export default function DashboardLayout() {
           <Link to="/" className="text-xl font-bold text-blue-600 dark:text-white">
             DataViz
           </Link>
-          <button onClick={() => setSidebarOpen(false)} className="md:hidden">
-            <X className="w-5 h-5 text-gray-500 dark:text-gray-300" />
+          <button onClick={() => setSidebarOpen(false)} >
+            <X className="w-5 h-5 text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100 trasition" />
           </button>
         </div>
         <nav className="p-4 space-y-2">
