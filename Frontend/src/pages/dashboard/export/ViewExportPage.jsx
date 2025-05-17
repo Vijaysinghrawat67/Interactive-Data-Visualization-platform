@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { getAllExports, downloadExport } from "@/services/apiServices.js";
 import { toast } from "sonner";
+import Modal from "@/components/ui/Modal.jsx"; 
+import { ChartPreview } from "@/components/charts/ChartPreview.jsx"; 
 
 const ViewExportsPage = () => {
   const [exports, setExports] = useState([]);
+  const [selectedExport, setSelectedExport] = useState(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   useEffect(() => {
     const fetchExports = async () => {
@@ -14,7 +18,6 @@ const ViewExportsPage = () => {
         toast.error("Failed to fetch export records");
       }
     };
-
     fetchExports();
   }, []);
 
@@ -34,9 +37,16 @@ const ViewExportsPage = () => {
     }
   };
 
+  const handlePreview = (exp) => {
+    setSelectedExport(exp);
+    setIsPreviewOpen(true);
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">📂 Your Export Records</h1>
+      <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">
+        📂 Your Export Records
+      </h1>
       {exports.length === 0 ? (
         <p className="text-gray-500 dark:text-gray-300">No exports found.</p>
       ) : (
@@ -44,22 +54,38 @@ const ViewExportsPage = () => {
           {exports.map((exp) => (
             <div
               key={exp._id}
-              className="bg-white dark:bg-gray-900 shadow border border-gray-200 dark:border-gray-700 rounded-xl p-4 flex justify-between items-center"
+              className="bg-white dark:bg-gray-900 shadow border border-gray-200 dark:border-gray-700 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center"
             >
-              <div>
+              <div className="flex-1">
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{exp.title}</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">{exp.description}</p>
-                <p className="text-sm text-gray-400 mt-1">Format: <span className="font-mono">{exp.exportFormat}</span></p>
+                <p className="text-sm text-gray-400 mt-1">
+                  Format: <span className="font-mono">{exp.exportFormat}</span>
+                </p>
               </div>
-              <button
-                onClick={() => handleDownload(exp.downloadLink)}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
-              >
-                ⬇️ Download
-              </button>
+              <div className="flex gap-3 mt-3 sm:mt-0">
+                <button
+                  onClick={() => handlePreview(exp)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                >
+                  👁️ Preview
+                </button>
+                <button
+                  onClick={() => handleDownload(exp.downloadLink)}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                >
+                  ⬇️ Download
+                </button>
+              </div>
             </div>
           ))}
         </div>
+      )}
+
+      {isPreviewOpen && selectedExport && (
+        <Modal onClose={() => setIsPreviewOpen(false)}>
+          <ChartPreview exportData={selectedExport} />
+        </Modal>
       )}
     </div>
   );

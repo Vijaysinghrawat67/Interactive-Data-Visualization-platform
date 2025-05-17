@@ -12,68 +12,91 @@ import path from 'path';
 
 
 const createExport = asyncHandler(async (req, res) => {
-    try {
-      const { exportFormat, visualizationIds, title, description, layout } = req.body;
-      const userId = req.user._id;
-  
-      const validFormats = ['png', 'pdf', 'csv', 'json'];
-      if (!validFormats.includes(exportFormat)) {
-        throw new ApiError(400, 'Invalid export format');
-      }
-  
-      const visualizations = await Visualization.find({ _id: { $in: visualizationIds }, userId })
-        .populate('datasourceId');
-  
-      if (!visualizations.length) {
-        throw new ApiError(404, 'No visualizations found or unauthorized');
-      }
-  
-      const fileName = `${uuidv4()}_${title?.replace(/\s+/g, '_') || 'export'}`;
-      let filePath;
-  
-      if (['png', 'pdf'].includes(exportFormat)) {
-        const htmlContent = `
-          <html>
-          <body>
-            <h1>${title || 'Untitled Export'}</h1>
-            <p>${description || ''}</p>
-            ${visualizations.map(viz => `
-              <div style="margin-bottom: 20px;">
-                <h3>${viz.title}</h3>
-                <div id="chart">${JSON.stringify(viz.config)}</div>
-              </div>
-            `).join('')}
-          </body>
-          </html>
-        `;
-  
-        filePath = await exportChartAsFile(htmlContent, exportFormat, fileName);
-      } else {
-        // Merge data from all visualizations
-        const mergedData = visualizations.flatMap(viz => viz.datasourceId.data);
-        filePath = exportDataFile(mergedData, exportFormat, fileName);
-      }
-  
-      const downloadLink = `/api/v1/exports/download/${fileName}.${exportFormat}`;
-  
-      const exportRecord = await Export.create({
-        userId,
-        visualizations: visualizationIds,
-        title,
-        description,
-        layout,
-        exportFormat,
-        downloadLink,
-      });
-  
-      return res.status(201).json(
-        new ApiResponse(201, downloadLink, { exportId: exportRecord._id }, "Export created successfully")
-      );
-    } catch (error) {
-      //console.error("❌ Export creation error:", error);
-      throw new ApiError(500, "Server error during export creation");
+  try {
+    const { exportFormat, visualizationIds, title, description, layout } = req.body;
+    const userId = req.user._id;
+
+    const validFormats = ['png', 'pdf', 'csv', 'json'];
+    if (!validFormats.includes(exportFormat)) {
+      throw new ApiError(400, 'Invalid export format');
     }
-  });
+
+    const visualizations = await Visualization.find({ _id: { $in: visualizationIds }, userId })
+      .populate('datasourceId');
+
+    if (!visualizations.length) {
+      throw new ApiError(404, 'No visualizations found or unauthorized');
+    }
+
+    const fileName = `${uuidv4()}_${title?.replace(/\s+/g, '_') || 'export'}`;
+    let filePath;
+
+    if (['png', 'pdf'].includes(exportFormat)) {
+      const htmlContent = `
+      <html>
+        <head>
+          <title>${title}</title>
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          <style>
+            body { font-family: sans-serif; padding: 20px; }
+            h1 { font-size: 24px; margin-bottom: 10px; }
+            canvas { margin-bottom: 30px; }
+          </style>
+        </head>
+        <body>
+          <h1>${title}</h1>
+          <p>${description}</p>
+          ${visualizations.map((viz, index) => `
+            <div>
+              <h3>${viz.title}</h3>
+              <canvas id="chart-${index}" width="600" height="400"></canvas>
+              <script>
+                const ctx${index} = document.getElementById('chart-${index}').getContext('2d');
+                new Chart(ctx${index}, ${JSON.stringify(viz.config)});
+              </script>
+            </div>
+          `).join('')}
+        </body>
+      </html>
+    `;
+
+      filePath = await exportChartAsFile(htmlContent, exportFormat, fileName);
+    } else {
+      // Merge data from all visualizations
+      const mergedData = visualizations.flatMap(viz => viz.datasourceId.data);
+      filePath = exportDataFile(mergedData, exportFormat, fileName);
+    }
+
+    const downloadLink = `/api/v1/exports/download/${fileName}.${exportFormat}`;
+
+    const exportRecord = await Export.create({
+      userId,
+      visualizations: visualizations.map((viz) => ({
+        _id: viz._id,
+        chartType: viz.chartType,  // Correct field name
+        title: viz.title,
+        xField: viz.xField,
+        yField: viz.yField,
+        config: viz.config,
+        data: viz.datasourceId?.data || [],
+      })),
+      title,
+      description,
+      layout,
+      exportFormat,
+      downloadLink,
+    });
+
+    return res.status(201).json(
+      new ApiResponse(201, downloadLink, { exportId: exportRecord._id }, "Export created successfully")
+    );
+  } catch (error) {
+    console.error("❌ Export creation error:", error);
+    throw new ApiError(500, "Server error during export creation");
+  }
+});
+
+
   
 
 

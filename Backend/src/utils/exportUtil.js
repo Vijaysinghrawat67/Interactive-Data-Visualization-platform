@@ -1,87 +1,44 @@
+
 import fs from 'fs';
 import path from 'path';
-import { Parser as Json2csvParser } from 'json2csv';
+import { fileURLToPath } from 'url';
 import puppeteer from 'puppeteer';
 
-// Directory where export files will be stored
-const EXPORT_DIR = path.resolve('exports');
-if (!fs.existsSync(EXPORT_DIR)) {
-  fs.mkdirSync(EXPORT_DIR);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const exportFolder = path.resolve(__dirname, '../../exports');
+
+if (!fs.existsSync(exportFolder)) {
+  fs.mkdirSync(exportFolder, { recursive: true });
 }
 
-/**
- * Exports chart HTML as a PDF or PNG file.
- * @param {string} htmlContent - HTML content to export.
- * @param {string} format - Export format: "pdf" or "png".
- * @param {string} fileName - Name of the file (without extension).
- * @returns {string} - Full file path of the generated export.
- */
-const exportChartAsFile = async (htmlContent, format, fileName) => {
-  const filePath = path.join(EXPORT_DIR, `${fileName}.${format}`);
-
-  const browser = await puppeteer.launch({
-    headless: 'new',
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
-
+export async function exportChartAsFile(htmlContent, format, fileName) {
+  const browser = await puppeteer.launch({ headless: 'new' });
   const page = await browser.newPage();
-  await page.setContent(htmlContent, {
-    waitUntil: 'networkidle0', // wait until all resources are loaded
-  });
+
+  await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+
+  const outputPath = path.join(exportFolder, `${fileName}.${format}`);
 
   if (format === 'pdf') {
-    await page.pdf({
-      path: filePath,
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '1cm',
-        right: '1cm',
-        bottom: '1cm',
-        left: '1cm',
-      },
-    });
-  } else if (format === 'png') {
-    await page.screenshot({
-      path: filePath,
-      fullPage: true,
-      type: 'png',
-    });
+    await page.pdf({ path: outputPath, format: 'A4', printBackground: true });
   } else {
-    await browser.close();
-    throw new Error(`Unsupported export format: ${format}`);
+    await page.screenshot({ path: outputPath, fullPage: true });
   }
 
   await browser.close();
-  return filePath;
-};
+  return outputPath;
+}
 
-/**
- * Exports JSON data as CSV or JSON file.
- * @param {object[]} data - The data array to export.
- * @param {string} format - Export format: "csv" or "json".
- * @param {string} fileName - Name of the file (without extension).
- * @returns {string} - Full file path of the generated data file.
- */
-const exportDataFile = (data, format, fileName) => {
-  const filePath = path.join(EXPORT_DIR, `${fileName}.${format}`);
-  let content;
-
-  if (format === 'csv') {
-    const parser = new Json2csvParser();
-    content = parser.parse(data);
-  } else if (format === 'json') {
-    content = JSON.stringify(data, null, 2);
-  } else {
-    throw new Error(`Unsupported data export format: ${format}`);
-  }
-
+export function exportDataFile(data, format, fileName) {
+  const filePath = path.join(exportFolder, `${fileName}.${format}`);
+  const content = format === 'csv' ? convertToCSV(data) : JSON.stringify(data, null, 2);
   fs.writeFileSync(filePath, content);
   return filePath;
-};
+}
 
-export {
-  EXPORT_DIR,
-  exportChartAsFile,
-  exportDataFile,
-};
+function convertToCSV(data) {
+  if (!Array.isArray(data) || data.length === 0) return '';
+  const headers = Object.keys(data[0]);
+  const rows = data.map(obj => headers.map(header => JSON.stringify(obj[header] || '')).join(','));
+  return [headers.join(','), ...rows].join('\n');
+}

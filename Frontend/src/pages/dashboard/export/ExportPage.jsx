@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { getUserVisualization } from "@/services/Visualization.js";
 import { saveExport } from "@/services/apiServices.js";
@@ -8,7 +7,7 @@ import ExportSettings from "./ExportSetting.jsx";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { toPng } from "html-to-image";
 
 const ExportPage = () => {
   const navigate = useNavigate();
@@ -39,7 +38,6 @@ const ExportPage = () => {
     const h = 6;
     const gridCols = 12;
 
-    // Build a map of all occupied grid cells
     const occupied = new Set();
     layoutConfig.forEach(({ x, y, w, h }) => {
       for (let dx = 0; dx < w; dx++) {
@@ -61,7 +59,7 @@ const ExportPage = () => {
         }
       }
 
-      if (needed.every(cell => !occupied.has(cell))) {
+      if (needed.every((cell) => !occupied.has(cell))) {
         positionFound = true;
         break;
       }
@@ -107,6 +105,24 @@ const ExportPage = () => {
       return;
     }
 
+    let imageData = null;
+
+    if (exportFormat === "png" || exportFormat === "pdf") {
+      const node = document.getElementById("export-content");
+      if (!node) {
+        toast.error("Export layout not found");
+        return;
+      }
+
+      try {
+        imageData = await toPng(node);
+      } catch (err) {
+        console.error("Image capture error:", err);
+        toast.error("Failed to capture chart layout");
+        return;
+      }
+    }
+
     try {
       const exportData = {
         title,
@@ -114,13 +130,18 @@ const ExportPage = () => {
         exportFormat,
         layout: layoutConfig,
         visualizationIds: selectedCharts.map((chart) => chart._id),
+        imageData,
       };
-      await saveExport(exportData, selectedCharts[0]._id);
+      await saveExport(exportData);
       toast.success("Export saved!");
-      navigate("/dashboard");
+      navigate("/dashboard/export/view");
     } catch {
       toast.error("Failed to save export");
     }
+  };
+
+  const handleViewExports = () => {
+    navigate("/dashboard/export/view");
   };
 
   return (
@@ -130,22 +151,19 @@ const ExportPage = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <header className="flex justify-between items-center mb-6">
-        <div className="text-left">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
-            📦 Build Your Export
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Select charts, organize layout, and save your export.
-          </p>
-        </div>
-
-        <Link to="/dashboard/export/view">
-        <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+      <header className="text-center mb-6">
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+          📦 Build Your Export
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">
+          Select charts, organize layout, and save your export.
+        </p>
+        <button
+          onClick={handleViewExports}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
         >
-          📁 View Existing Exports
+          View Existing Exports
         </button>
-        </Link>
       </header>
 
       <section>
@@ -164,7 +182,11 @@ const ExportPage = () => {
         <ChartSelector onSelectChart={handleChartAdd} />
       </section>
 
-      <section>
+      <section id="export-content" className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow">
+        <header className="mb-4">
+          <h1 className="text-2xl font-bold">{title}</h1>
+          <p className="text-gray-600">{description}</p>
+        </header>
         <ExportLayout
           charts={selectedCharts}
           layout={layoutConfig}
