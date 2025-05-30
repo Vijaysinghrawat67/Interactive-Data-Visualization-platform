@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getDataSources } from "@/services/datasource.js";
+import { getDataSources, deleteDataSource } from "@/services/datasource.js";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 const DataSourceList = () => {
   const [dataSources, setDataSources] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState(null); // track deleting state
 
   useEffect(() => {
     const fetchDataSources = async () => {
@@ -26,6 +27,22 @@ const DataSourceList = () => {
 
     fetchDataSources();
   }, []);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this data source?")) return;
+
+    setDeletingId(id);
+    try {
+      await deleteDataSource(id);
+      setDataSources((prev) => prev.filter((ds) => ds._id !== id));
+      toast.success("Data source deleted successfully");
+    } catch (error) {
+      console.error("Delete failed:", error);
+      toast.error("Failed to delete data source");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (loading) {
     return <Skeleton className="w-full h-[200px] rounded-xl" />;
@@ -83,13 +100,22 @@ const DataSourceList = () => {
                     : "Date not available"}
                 </p>
 
-                {/* View Button */}
-                <div className="mt-4">
-                  <Link to={`/dashboard/datasource/view/${ds._id}`}>
+                {/* Buttons: View Details + Delete */}
+                <div className="mt-4 flex space-x-3">
+                  <Link to={`/dashboard/datasource/view/${ds._id}`} className="flex-grow">
                     <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold py-2 rounded-lg hover:shadow-lg transition-all duration-300">
                       View Details
                     </Button>
                   </Link>
+
+                  <Button
+                    variant="destructive"
+                    className="w-24"
+                    onClick={() => handleDelete(ds._id)}
+                    disabled={deletingId === ds._id}
+                  >
+                    {deletingId === ds._id ? "Deleting..." : "Delete"}
+                  </Button>
                 </div>
               </CardContent>
             </Card>

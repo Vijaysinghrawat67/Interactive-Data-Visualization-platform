@@ -3,56 +3,89 @@ import {ApiError} from '../utils/ApiError.js';
 import {asyncHandler} from '../utils/AsyncHandler.js';
 import {User} from '../models/user.model.js';
 import {Dashboard} from '../models/dashboard.model.js';
+import {DataSource} from '../models/dataSource.model.js'
+import {Export} from '../models/export.model.js';
+import {Visualization} from '../models/visualization.model.js';
+import mongoose from 'mongoose';
 
 
 
 const userDashboard = asyncHandler(async (req, res) => {
-    const userId = req.user?._id;
+  const userId = req.user?._id;
 
-    const user = await User.findById(userId).select("-password -refreshtoken");
+  const user = await User.findById(userId).select("-password -refreshtoken");
 
-    if (!user) {
-        throw new ApiError(404, "User not found");
-    }
+  if (!user) {
+    throw new ApiError(404, "User not found");
 
-    // Get additional user data
-    const accountAge = Math.floor((Date.now() - user.createdAt) / (1000 * 60 * 60 * 24)); // Days since account creation
-    const lastUpdated = user.updatedAt; // Last profile update timestamp
+  }
 
-    return res.status(200).json(
-        new ApiResponse(200, {
-            user,
-            accountAge,
-            lastUpdated,
-        }, "User dashboard data fetched successfully")
-    );
+  const objectUserId = new mongoose.Types.ObjectId(userId);
+
+  // Get counts in parallel
+  const [visualizationsCount, datasetsCount, exportsCount] = await Promise.all([
+    Visualization.countDocuments({ createdBy: userId }),
+    DataSource.countDocuments({ createdBy: userId }),
+    Export.countDocuments({ userId }),
+  ]);
+
+  // Aggregate visualizations created over time (last 30 days for example)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const visualizationsOverTimeRaw = await Visualization.aggregate([
+    { $match: { createdBy: userId, createdAt: { $gte: thirtyDaysAgo } } },
+    {
+      $group: {
+        _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ]);
+
+  // Format aggregation output
+  const visualizationsOverTime = visualizationsOverTimeRaw.map(item => ({
+    date: item._id,
+    count: item.count,
+  }));
+
+  const accountAge = Math.floor((Date.now() - user.createdAt) / (1000 * 60 * 60 * 24)); // Days since account creation
+  const lastUpdated = user.updatedAt; // Last profile update timestamp
+
+  return res.status(200).json(
+    new ApiResponse(200, {
+      user,
+      accountAge,
+      lastUpdated,
+      visualizationsCount,
+      datasetsCount,
+      exportsCount,
+      visualizationsOverTime,  // <== Add this here
+    }, "User dashboard data fetched successfully")
+  );
 });
 
 
 
+
 const adminDashboard = asyncHandler(async (req, res) => {
-    const totalUsers = await User.countDocuments();
-    const userCount = await User.countDocuments({ role: "user" });
-    const adminCount = await User.countDocuments({ role: "admin" });
+    const [totalUsers, userCount, adminCount, newUsersLastWeek, recentUsers] = await Promise.all([
+    User.countDocuments(),
+    User.countDocuments({ role: "user" }),
+    User.countDocuments({ role: { $in: ["admin", "super-admin"] } }),
+    User.countDocuments({ createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } }),
+    User.find({}).sort({ updatedAt: -1 }).limit(5).select("-password -refreshtoken"),
+  ]);
 
-    // Get new users registered in the last 7 days
-    const last7Days = new Date();
-    last7Days.setDate(last7Days.getDate() - 7);
-    const newUsersLastWeek = await User.countDocuments({ createdAt: { $gte: last7Days } });
-
-    // Get recently updated users
-    const recentlyUpdatedUsers = await User.find({})
-        .sort({ updatedAt: -1 })
-        .limit(5)
-        .select("-password -refreshtoken");
-
+   
     return res.status(200).json(
         new ApiResponse(200, {
             totalUsers,
             userCount,
             adminCount,
             newUsersLastWeek,
-            recentUsers: recentlyUpdatedUsers,
+            recentUsers
         }, "Admin dashboard data fetched successfully")
     );
 });

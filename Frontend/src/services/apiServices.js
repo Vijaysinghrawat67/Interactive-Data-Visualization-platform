@@ -25,9 +25,17 @@ const deleteExport = async(exportId) => {
 }
 
 
+const getActivityLogs = async(params = {}) => {
+    const response = await api.get("/api/v1/activity", {
+        params,
+    });
+    return response.data;
+}
+
 export{
     saveExport,
     getAllExports,
     downloadExport,
-    deleteExport
+    deleteExport,
+    getActivityLogs
 }

@@ -58,6 +58,7 @@ export default function UserProfile() {
   }, []);
 
   const formik = useFormik({
+    enableReinitialize: true,
     initialValues: {
       name: user?.name || "",
       email: user?.email || "",
@@ -86,6 +87,7 @@ export default function UserProfile() {
         toast.success("Profile updated!");
         setEditMode(false);
         fetchUser(); // Reload updated profile data
+        setPreview(null);
       } catch (err) {
         toast.error("Profile update failed.");
       }
@@ -112,110 +114,178 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Profile</h1>
+    <div className="max-w-4xl mx-auto px-6 py-8 space-y-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+          My Profile
+        </h1>
         <button
           onClick={() => setEditMode(!editMode)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+          className="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none rounded-md text-white font-semibold transition"
+          aria-label={editMode ? "Cancel edit" : "Edit profile"}
         >
           {editMode ? (
             <>
-              <X className="w-4 h-4" /> Cancel
+              <X className="w-5 h-5" /> Cancel
             </>
           ) : (
             <>
-              <Pencil className="w-4 h-4" /> Edit
+              <Pencil className="w-5 h-5" /> Edit
             </>
           )}
         </button>
       </div>
 
-      {/* Display user profile or edit form based on editMode */}
+      {/* Content */}
       {!editMode ? (
-        <div className="space-y-6">
-          {/* Profile Card */}
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-md space-y-6">
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              <img
-                src={user?.profileImage || "/placeholder.jpg"}
-                alt="Profile"
-                className="w-28 h-28 rounded-full object-cover border-4 border-blue-500"
-              />
-              <div className="text-center md:text-left">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{user.name}</h2>
-                <p className="text-gray-500">@{user.username}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 max-w-md">{user.bio || "No bio available"}</p>
+        <>
+          {/* Profile Info Card */}
+          <section className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-lg flex flex-col md:flex-row items-center md:items-start gap-8">
+            <img
+              src={preview || user?.profileImage || "/placeholder.jpg"}
+              alt="Profile"
+              className="w-32 h-32 rounded-full object-cover border-4 border-blue-500 flex-shrink-0"
+            />
+            <div className="flex-1 text-center md:text-left space-y-2">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{user.name}</h2>
+              <p className="text-blue-600 font-medium">@{user.username}</p>
+              <p className="text-gray-700 dark:text-gray-300 text-base max-w-lg leading-relaxed">
+                {user.bio || "No bio available."}
+              </p>
+
+              {/* Contact Info */}
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-6 text-gray-700 dark:text-gray-300 text-sm">
+                {user.email && (
+                  <DetailRow icon={<Mail className="w-5 h-5 text-blue-600" />} label="Email" value={`mailto:${user.email}`} />
+                )}
+                {user.phNumber && (
+                  <DetailRow icon={<Phone className="w-5 h-5 text-blue-600" />} label="Phone" value={`tel:${user.phNumber}`} />
+                )}
+                {user.location && (
+                  <DetailRow icon={<MapPin className="w-5 h-5 text-blue-600" />} label="Location" value={user.location} />
+                )}
               </div>
             </div>
+          </section>
 
-            {/* Display Email, Phone, Location */}
-            <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm text-gray-700 dark:text-gray-300 mt-4">
-              {user.email && (
-                <DetailRow icon={<Mail className="w-4 h-4 text-blue-600" />} label="Email" value={user.email} />
-              )}
-              {user.phNumber && (
-                <DetailRow icon={<Phone className="w-4 h-4 text-blue-600" />} label="Phone" value={user.phNumber} />
-              )}
-              {user.location && (
-                <DetailRow icon={<MapPin className="w-4 h-4 text-blue-600" />} label="Location" value={user.location} />
-              )}
-            </div>
-          </div>
-
-          {/* Display Social Links */}
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-md space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Social & Website</h3>
-            <div className="flex flex-wrap gap-6 text-sm text-gray-700 dark:text-gray-300">
+          {/* Social & Website Card */}
+          <section className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Social & Website
+            </h3>
+            <div className="flex flex-wrap gap-8 text-gray-700 dark:text-gray-300 text-sm">
               {user.socialLinks?.website && (
-                <DetailRow icon={<Globe className="w-4 h-4 text-blue-600" />} label="Website" value={user.socialLinks.website} />
+                <DetailRow icon={<Globe className="w-5 h-5 text-blue-600" />} label="Website" value={user.socialLinks.website} />
               )}
               {user.socialLinks?.github && (
-                <DetailRow icon={<Github className="w-4 h-4 text-blue-600" />} label="GitHub" value={user.socialLinks.github} />
+                <DetailRow icon={<Github className="w-5 h-5 text-blue-600" />} label="GitHub" value={user.socialLinks.github} />
               )}
               {user.socialLinks?.linkedin && (
-                <DetailRow icon={<Linkedin className="w-4 h-4 text-blue-600" />} label="LinkedIn" value={user.socialLinks.linkedin} />
+                <DetailRow icon={<Linkedin className="w-5 h-5 text-blue-600" />} label="LinkedIn" value={user.socialLinks.linkedin} />
+              )}
+              {!user.socialLinks?.website && !user.socialLinks?.github && !user.socialLinks?.linkedin && (
+                <p className="text-gray-400 italic">No social or website links provided.</p>
               )}
             </div>
-          </div>
-        </div>
+          </section>
+        </>
       ) : (
         // Edit Form
-        <form onSubmit={formik.handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Input name="name" value={formik.values.name} onChange={formik.handleChange} label="Name" error={formik.errors.name} />
-          <Input name="email" value={formik.values.email} onChange={formik.handleChange} label="Email" error={formik.errors.email} />
-          <Input name="phNumber" value={formik.values.phNumber} onChange={formik.handleChange} label="Phone" error={formik.errors.phNumber} />
-          <Input name="location" value={formik.values.location} onChange={formik.handleChange} label="Location" />
-          <Input name="bio" value={formik.values.bio} onChange={formik.handleChange} label="Bio" />
-          <Input name="website" value={formik.values.website} onChange={formik.handleChange} label="Website" />
-          <Input name="github" value={formik.values.github} onChange={formik.handleChange} label="GitHub" />
-          <Input name="linkedin" value={formik.values.linkedin} onChange={formik.handleChange} label="LinkedIn" />
-          <div className="col-span-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">Profile Image</label>
-            <input type="file" name="profileImage" onChange={handleImageChange} accept="image/*" />
-            {preview || user?.profileImage ? (
-              <div className="mt-2">
+        <form
+          onSubmit={formik.handleSubmit}
+          className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-lg grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
+          <Input
+            name="name"
+            value={formik.values.name}
+            onChange={formik.handleChange}
+            label="Name"
+            error={formik.touched.name && formik.errors.name}
+            onBlur={formik.handleBlur}
+          />
+          <Input
+            name="email"
+            value={formik.values.email}
+            onChange={formik.handleChange}
+            label="Email"
+            error={formik.touched.email && formik.errors.email}
+            onBlur={formik.handleBlur}
+          />
+          <Input
+            name="phNumber"
+            value={formik.values.phNumber}
+            onChange={formik.handleChange}
+            label="Phone"
+            error={formik.touched.phNumber && formik.errors.phNumber}
+            onBlur={formik.handleBlur}
+          />
+          <Input
+            name="location"
+            value={formik.values.location}
+            onChange={formik.handleChange}
+            label="Location"
+          />
+          <Input
+            name="bio"
+            value={formik.values.bio}
+            onChange={formik.handleChange}
+            label="Bio"
+          />
+          <Input
+            name="website"
+            value={formik.values.website}
+            onChange={formik.handleChange}
+            label="Website"
+          />
+          <Input
+            name="github"
+            value={formik.values.github}
+            onChange={formik.handleChange}
+            label="GitHub"
+          />
+          <Input
+            name="linkedin"
+            value={formik.values.linkedin}
+            onChange={formik.handleChange}
+            label="LinkedIn"
+          />
+
+          {/* Profile Image Upload */}
+          <div className="col-span-2 flex flex-col items-start gap-2">
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Profile Image</label>
+            <input
+              type="file"
+              name="profileImage"
+              onChange={handleImageChange}
+              accept="image/*"
+              className="text-sm text-gray-700 dark:text-gray-300"
+            />
+            {(preview || user?.profileImage) && (
+              <div className="mt-3 flex items-center gap-4">
                 <img
                   src={preview || user?.profileImage}
                   alt="Profile Preview"
-                  className="w-20 h-20 rounded-full object-cover"
+                  className="w-20 h-20 rounded-full object-cover border border-gray-300 dark:border-gray-600"
                 />
                 <button
                   type="button"
                   onClick={handleRemoveImage}
-                  className="text-red-500 text-xs mt-1 hover:underline"
+                  className="text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-400 rounded"
                 >
                   Remove Image
                 </button>
               </div>
-            ) : null}
+            )}
           </div>
+
+          {/* Submit Button */}
           <div className="col-span-2">
             <button
               type="submit"
-              className="w-full md:w-auto px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2"
+              className="w-full md:w-auto px-6 py-3 bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 text-white rounded-md font-semibold flex items-center justify-center gap-2 transition"
             >
-              <Save className="w-4 h-4" /> Save Changes
+              <Save className="w-5 h-5" /> Save Changes
             </button>
           </div>
         </form>
@@ -224,34 +294,48 @@ export default function UserProfile() {
   );
 }
 
-// Input Component for reusable form fields
-const Input = ({ label, name, value, onChange, type = "text", error }) => (
+// Input component for form fields
+const Input = ({ label, name, value, onChange, type = "text", error, onBlur }) => (
   <div className="space-y-1">
-    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
+    <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+      {label}
+    </label>
     <input
-      type={type}
+      id={name}
       name={name}
+      type={type}
       value={value}
       onChange={onChange}
-      className="w-full rounded-md p-2 border border-gray-300 dark:bg-slate-800 dark:text-white"
+      onBlur={onBlur}
+      className={`w-full rounded-md p-2 border ${
+        error
+          ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+          : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+      } dark:bg-slate-800 dark:text-white transition`}
     />
-    {error && <div className="text-red-500 text-xs">{error}</div>}
+    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
   </div>
 );
 
-// DetailRow component for displaying details like Email, Phone, etc.
+// DetailRow component to show label + icon + value/link
 const DetailRow = ({ label, value, icon }) => (
-  <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
-    <div className="flex items-center gap-2 min-w-[90px] font-medium text-gray-600 dark:text-gray-400">
-      {icon} {label}:
+  <div className="flex items-center gap-3 min-w-[160px]">
+    <div className="flex items-center gap-2 font-semibold text-gray-600 dark:text-gray-400">
+      {icon} <span>{label}:</span>
     </div>
-    <div>
+    <div className="truncate">
       {value ? (
-        <a href={value} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">
-          {value}
+        <a
+          href={value}
+          className="text-blue-600 hover:underline dark:text-blue-400"
+          target="_blank"
+          rel="noopener noreferrer"
+          title={value}
+        >
+          {value.length > 30 ? value.slice(0, 30) + "..." : value}
         </a>
       ) : (
-        <span className="text-gray-400">Not provided</span>
+        <span className="text-gray-400 italic">Not provided</span>
       )}
     </div>
   </div>

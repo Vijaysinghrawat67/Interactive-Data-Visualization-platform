@@ -39,9 +39,10 @@ export default function DashboardLayout() {
     { label: "Profile", path: "/dashboard/profile", icon: <User /> },
     { label: "Data Sources", path: "/dashboard/datasource", icon: <Database /> },
     { label: "Visualizations", path: "/dashboard/visualization", icon: <BarChart3 /> },
-    { label: "Activity Logs", path: "/dashboard/logs", icon: <FileText /> },
-    { label: "Settings", path: "/dashboard/settings", icon: <Settings /> },
     { label: "Export", path: "/dashboard/export", icon: <Share2 /> },
+    { label: "Activity Logs", path: "/dashboard/activity", icon: <FileText /> },
+    { label: "Settings", path: "/dashboard/settings", icon: <Settings /> },
+    
   ];
 
   return (

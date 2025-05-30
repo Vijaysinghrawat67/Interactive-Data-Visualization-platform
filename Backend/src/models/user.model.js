@@ -52,7 +52,7 @@ const userSchema = new Schema({
         type : String,
         default : ""
     },
-    socialLinls : {
+    socialLinks : {
         website : {type : String, default : ""},
         github : {type: String, default : ""},
         linkedin : {type : String, default : ""}

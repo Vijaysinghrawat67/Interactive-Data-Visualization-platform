@@ -9,7 +9,6 @@ const activityLogSchema = new Schema({
     },
     actiontype : {
         type : String,
-        enum: ["create", "update", "delete", "share", "export", "login", "register"],
         required : true,
     },
     visualizationId : {

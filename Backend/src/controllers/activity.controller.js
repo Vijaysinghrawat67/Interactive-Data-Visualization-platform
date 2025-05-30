@@ -15,12 +15,15 @@ const getActivityLog = asyncHandler(async(req, res) => {
         filter.visualizationId = visualizationId;
     }
 
+    
+
     const logs = await ActivityLog.find(filter)
     .populate("userId", "name email")
     .populate("visualizationId", "title")
     .sort({createdAt : -1});
 
 
+    
     return res.status(200)
     .json(
         new ApiResponse(200, logs, "Activity log fetched successfully")

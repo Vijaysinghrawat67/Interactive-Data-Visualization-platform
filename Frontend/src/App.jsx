@@ -15,7 +15,7 @@ const ContactPage = React.lazy( () => import("@/pages/Contact.jsx"))
 
 // Dashboard Layout and children
 const DashboardPage = React.lazy(() => import("@/pages/dashboard/index.jsx"));
-const DashboardOverview = React.lazy(() => import("@/pages/dashboard/DashboardOverview.jsx"));
+const DashboardOverview = React.lazy(() => import("@/pages/dashboard/overview/DashboardOverview.jsx"));
 const Profile = React.lazy(() => import("@/pages/dashboard/Profile.jsx"));
 
 const VisualizationList = React.lazy(() => import("@/pages/dashboard/visualization/VisualizationListPage.jsx"));
@@ -27,9 +27,8 @@ const DataSourceList = React.lazy(() => import("@/pages/dashboard/datasource/Dat
 const UplloadDataSource = React.lazy( () => import("@/pages/dashboard/datasource/UploadDataSource.jsx"))
 const GetSingleDataSource = React.lazy( () => import("@/pages/dashboard/datasource/ViewDataSource.jsx"))
 
-const ActivityLogs = React.lazy(() => import("@/pages/dashboard/Logs.jsx"));
+const ActivityLogs = React.lazy(() => import("@/pages/dashboard/activity/ActivityLogPage.jsx"));
 const SettingPage = React.lazy(() => import("@/pages/dashboard/Setting.jsx"));
-//const Dashboard = React.lazy( () => import("@/pages/dashboard/dash/Dashboard.jsx"))
 const ExportPage = React.lazy( () => import("@/pages/dashboard/export/ExportPage.jsx"))
 const ViewExportPage = React.lazy( () => import("@/pages/dashboard/export/ViewExportPage.jsx"))
 
@@ -70,6 +69,7 @@ function App() {
                 <Route  path="view/:id" element={< GetSingleDataSource/>}/>
               </Route>
               
+              <Route path="activity" element={< ActivityLogs/>} />
               <Route path="settings" element={<SettingPage />} />
               <Route path="export" >
                   <Route index element={<ExportPage />} />

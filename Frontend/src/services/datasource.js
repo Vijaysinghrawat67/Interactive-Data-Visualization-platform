@@ -67,9 +67,23 @@ const getDataSourceSchema = async (dataSourceId) => {
   }
 };
 
+
+const deleteDataSource = async (dataSourceId) => {
+  try {
+    const response = await api.delete(`/api/v1/upload/data-sources/${dataSourceId}`, {
+      withCredentials: true
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to delete data source:", error);
+    throw new Error("Delete failed");
+  }
+};
+
 export{
   uploadCsvOrExcel,
   uploadText,
   uploadApi,
-  getDataSourceSchema
+  getDataSourceSchema,
+  deleteDataSource
 }
