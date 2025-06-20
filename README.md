@@ -1,6 +1,6 @@
 
 
-# 📊 **Data Visualization application - Final Year Major Project**
+# 📊 **Data Visualization Web application - Final Year Major Project**
 
 ## 🧠 **Project Overview**
 A scalable, full-stack **Data Visualization Platform** designed to empower users with:
