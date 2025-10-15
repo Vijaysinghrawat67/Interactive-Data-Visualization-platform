@@ -261,34 +261,6 @@ Final Dashboard & Reports
 
 ---
 
-## 9. **Conclusion**  
-➔ Summarize what you achieved.  
-➔ Future enhancements (examples: adding more AI features, more export formats, ML-based insights).
 
----
 
-## 10. **References**  
-➔ Mention any libraries, frameworks, or online resources used.
 
----
-
-# ⚡ Quick Tip for your Viva:
-- Prepare a 2–3 minute explanation about "What makes your project better than traditional tools like Excel or static reporting."
-- Mention **customization**, **live updates**, **easy sharing**, and **AI insights** — these points always impress examiners.
-
----
-
-# ✅ **Summary**
-You now have:
-- 📈 A full roadmap flowchart
-- 📖 A full major project report outline  
-- ✅ A clear idea what features to complete next
-
----
-
-# 👉 Would you like me to also help you with:
-- A **Ready-Made Abstract** for your submission? (short 1-page)  
-- **Sample screenshots list** you should take for your report?
-
-(If yes, just say `continue!`) 🚀  
-We’ll make sure your project is **100% final-year ready**! 🎓
